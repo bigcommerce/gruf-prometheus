@@ -16,7 +16,6 @@ In your gruf initializer:
 require 'gruf/prometheus'
 
 Gruf.configure do |c|
-  require 'gruf/prometheus'
   c.hooks.use(Gruf::Prometheus::Hook)
 end
 ```

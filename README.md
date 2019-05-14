@@ -7,7 +7,7 @@ Adds Prometheus support for [gruf](https://github.com/bigcommerce/gruf) 2.7.0+.
 ## Installation
 
 ```ruby
-gem 'gruf-prometheus'
+gem 'gruf-prometheus', git: 'git@github.com:bigcommerce/gruf-prometheus'
 ```
 
 In your gruf initializer:

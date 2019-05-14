@@ -1,0 +1,23 @@
+AllCops:
+  TargetRubyVersion: 2.4
+  Exclude:
+    - spec/**/*
+    - .bundle/**/*
+    - bin/**/*
+    - vendor/**/*
+    - tmp/**/*
+    - log/**/*
+    - Rakefile
+    - lib/gruf/prometheus/collectors/grpc.rb
+    - gruf-prometheus.gemspec
+
+# Allow *VALID_CONFIG_KEYS.keys
+Lint/AmbiguousOperator:
+  Enabled: false
+
+# This cop conflicts with other cops
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 50

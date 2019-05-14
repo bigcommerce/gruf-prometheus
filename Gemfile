@@ -19,7 +19,7 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'gruf', path: '/Users/shaun.mccormick/www/gruf/'
+gem 'gruf', git: 'git@github.com:bigcommerce/gruf', branch: 'hooks'
 gem 'prometheus_exporter', '~> 0.4'
 
 group :development do

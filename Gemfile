@@ -19,13 +19,3 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'gruf', git: 'git@github.com:bigcommerce/gruf', branch: 'hooks'
-gem 'prometheus_exporter', '~> 0.4'
-
-group :development do
-  gem 'bundler-audit',         '~> 0.6'
-  gem 'rspec',                 '~> 3.8'
-  gem 'rspec_junit_formatter', '~> 0.4.1'
-  gem 'rubocop',               '~> 0.68'
-  gem 'simplecov', require: false
-end

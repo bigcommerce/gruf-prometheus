@@ -17,6 +17,9 @@
 #
 require 'prometheus_exporter'
 require 'prometheus_exporter/server'
+require 'prometheus_exporter/client'
+require 'prometheus_exporter/middleware'
+require 'prometheus_exporter/instrumentation'
 require 'gruf'
 
 require_relative 'prometheus/version'

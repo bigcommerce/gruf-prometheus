@@ -27,35 +27,47 @@ module Gruf
       # @param [Gruf::Server] server
       #
       def before_server_start(server:)
-        ::PrometheusExporter::Instrumentation::Process.start(
-          type: ::Gruf::Prometheus.process_label,
-          client: ::Gruf::Prometheus.client,
-          frequency: ::Gruf::Prometheus.collection_frequency
-        )
-        ::Gruf::Prometheus::Instrumentors::Grpc.start(
-          server: server,
-          client: ::Gruf::Prometheus.client,
-          frequency: ::Gruf::Prometheus.collection_frequency
-        )
+        start_collectors(server: server)
+        prometheus_server.add_type_collector(Gruf::Prometheus::TypeCollectors::Grpc)
         prometheus_server.start
+      rescue StandardError => e
+        logger.error "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Failed to start gruf instrumentation - #{e.message} - #{e.backtrace[0..4].join("\n")}"
       end
 
       ##
       # Handle proper shutdown of the prometheus server
       #
-      def after_server_stop(*)
+      def after_server_stop(server:)
+        logger.debug "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping #{server.class}"
         prometheus_server.stop
       end
 
       private
 
       ##
+      # Start collectors for the gRPC process
+      #
+      def start_collectors(server:)
+        ::PrometheusExporter::Instrumentation::Process.start(
+          type: ::Gruf::Prometheus.process_label,
+          client: ::Gruf::Prometheus.client,
+          frequency: ::Gruf::Prometheus.collection_frequency
+        )
+        ::Gruf::Prometheus::Collectors::Grpc.start(
+          server: server,
+          client: ::Gruf::Prometheus.client,
+          frequency: ::Gruf::Prometheus.collection_frequency
+        )
+      end
+
+      ##
       # @return [Gruf::Prometheus::Server]
       #
       def prometheus_server
-        @prometheus_server ||= Gruf::Prometheus::Server.new(
+        @prometheus_server ||= ::Gruf::Prometheus::Server.new(
           port: Gruf::Prometheus.server_port,
-          timeout: Gruf::Prometheus.server_timeout
+          timeout: Gruf::Prometheus.server_timeout,
+          prefix: Gruf::Prometheus.server_prefix
         )
       end
     end

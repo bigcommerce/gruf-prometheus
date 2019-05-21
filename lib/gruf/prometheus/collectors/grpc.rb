@@ -19,74 +19,73 @@ module Gruf
   module Prometheus
     module Collectors
       ##
-      # Collector for prometheus and grpc instrumentation
+      # Prometheus instrumentor for gRPC servers
       #
-      class Grpc < PrometheusExporter::Server::TypeCollector
-        GRPC_GAUGES = {
-          pool_jobs_waiting_total: 'Number jobs in the gRPC thread pool that are actively waiting',
-          pool_ready_workers_total: 'The amount of non-busy workers in the thread pool',
-          pool_workers_total: 'Number of workers in the gRPC thread pool',
-          pool_initial_size: 'Initial size of the gRPC thread pool',
-          poll_period: 'Polling period for the gRPC thread pool'
-        }.freeze
-
-        GRPC_COUNTS = {
-          thread_pool_exhausted: 'Times the gRPC thread pool has been exhausted'
-        }.freeze
+      class Grpc
+        include Gruf::Loggable
 
         ##
-        # Initialize the collector
+        # @param [Gruf::Server] server
+        # @param [Gruf::Prometheus::Client] client
+        # @param [Integer] frequency
         #
-        def initialize
-          @grpc_metrics = []
+        def initialize(server:, client:, frequency: nil)
+          @server = server
+          @client = client
+          @frequency = frequency || 15
         end
 
         ##
-        # @return [String]
+        # Start the instrumentor
         #
-        def type
-          'grpc'
-        end
-
-        ##
-        # Collect the object into the buffer
-        #
-        def collect(obj)
-          @grpc_metrics << obj
-        end
-
-        ##
-        # @return [Array]
-        #
-        def metrics
-          return [] if @grpc_metrics.none?
-
-          metrics = {}
-
-          @grpc_metrics.map do |m|
-            labels = {}
-            labels.merge!(m['custom_labels']) if m['custom_labels']
-
-            GRPC_GAUGES.map do |k, help|
-              k = k.to_s
-              v = m[k]
-              if v
-                g = metrics[k] ||= PrometheusExporter::Metric::Gauge.new("grpc_#{k}", help)
-                g.observe(v, labels)
-              end
-            end
-
-            GRPC_COUNTS.map do |k, help|
-              k = k.to_s
-              v = m[k]
-              if v
-                g = metrics[k] ||= PrometheusExporter::Metric::Counter.new("grpc_#{k}", help)
-                g.observe(v, labels)
-              end
+        def self.start(server:, client: nil, frequency: nil)
+          collector = new(server: server, client: client, frequency: frequency)
+          Thread.new do
+            loop do
+              collector.run
             end
           end
+        end
 
-          metrics.values
+        def run
+          metric = collect
+          logger.debug "[gruf-prometheus] Pushing metrics to collector: #{metric.inspect}"
+          @client.send_json metric
+        rescue StandardError => e
+          logger.error "[gruf-prometheus] Failed to collect gruf-prometheus stats: #{e.message}"
+        ensure
+          sleep @frequency
+        end
+
+        private
+
+        def collect
+          metric = {}
+          metric[:type] = 'grpc'
+          rpc_server = @server.server
+          rpc_server.instance_variable_get(:@run_mutex).synchronize do
+            collect_server_metrics(rpc_server, metric)
+          end
+          metric
+        end
+
+        ##
+        # @param [GRPC::RpcServer] rpc_server
+        #
+        def collect_server_metrics(rpc_server, metric)
+          pool = rpc_server.instance_variable_get(:@pool)
+          metric[:pool_jobs_waiting_total] = pool.jobs_waiting.to_i
+          metric[:pool_ready_workers_total] = pool.instance_variable_get(:@ready_workers).size
+          metric[:pool_workers_total] = pool.instance_variable_get(:@workers)&.size
+          metric[:pool_initial_size] = rpc_server.instance_variable_get(:@pool_size).to_i
+          metric[:poll_period] = rpc_server.instance_variable_get(:@poll_period).to_i
+        end
+
+        ##
+        # @return [GRPC::RpcServer]
+        #
+        def grpc_server
+          @server.server
         end
       end
     end

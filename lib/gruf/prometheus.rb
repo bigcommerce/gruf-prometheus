@@ -27,7 +27,7 @@ require_relative 'prometheus/configuration'
 require_relative 'prometheus/client'
 require_relative 'prometheus/server'
 require_relative 'prometheus/collectors/grpc'
-require_relative 'prometheus/instrumentors/grpc'
+require_relative 'prometheus/type_collectors/grpc'
 require_relative 'prometheus/hook'
 
 module Gruf

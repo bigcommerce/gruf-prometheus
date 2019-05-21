@@ -26,9 +26,11 @@ module Gruf
         client_max_queue_size: 10_000,
         client_thread_sleep: 0.5,
         process_label: 'grpc',
+        process_name: 'grpc',
         collection_frequency: 15,
         server_host: '0.0.0.0',
         server_port: ::PrometheusExporter::DEFAULT_PORT,
+        server_prefix: ::PrometheusExporter::DEFAULT_PREFIX,
         server_timeout: ::PrometheusExporter::DEFAULT_TIMEOUT
       }.freeze
 

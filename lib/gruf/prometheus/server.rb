@@ -19,41 +19,101 @@ module Gruf
   module Prometheus
     ##
     # Prometheus server that runs with gruf hooks
+    #
     class Server
       include Gruf::Loggable
 
-      def initialize(port:, timeout:, verbose: false)
+      def initialize(port:, timeout:, prefix: nil, verbose: false)
         @port = (port || ::PrometheusExporter::DEFAULT_PORT).to_i
         @timeout = (timeout || ::PrometheusExporter::DEFAULT_TIMEOUT).to_i
+        @prefix = (prefix || ::PrometheusExporter::DEFAULT_PREFIX).to_s
         @verbose = verbose
+        @running = false
+        @process_name = ::Gruf::Prometheus.process_name
+        @server = nil
       end
 
       def start
-        logger.info "[gruf-prometheus] Starting prometheus exporter on port #{@port}"
-        PrometheusExporter::Metric::Base.default_prefix = PrometheusExporter::DEFAULT_PREFIX
-        server_collector.register_collector(Gruf::Prometheus::Collectors::Grpc.new)
+        setup_signal_handlers
+
+        logger.info "[gruf-prometheus][#{@process_name}] Starting prometheus exporter on port #{@port}"
         server.start
+        logger.info "[gruf-prometheus][#{@process_name}] Prometheus exporter started on port #{@port}"
+
+        @running = true
+        server
       end
 
+      ##
+      # Stop the server
+      #
       def stop
-        logger.info '[gruf-prometheus] Prometheus server shutting down...'
+        logger.info "[gruf-prometheus][#{@process_name}] Shutting down prometheus exporter"
         server.stop
-        logger.info '[gruf-prometheus] Prometheus server shut down successfully...'
+        logger.info "[gruf-prometheus][#{@process_name}] Prometheus exporter cleanly shut down"
+      rescue StandardError => e
+        logger.error "[gruf-prometheus][#{@process_name}] Failed to stop exporter: #{e.message}"
+      end
+
+      ##
+      # Whether or not the server is running
+      #
+      # @return [Boolean]
+      #
+      def running?
+        @running
+      end
+
+      ##
+      # Add a type collector to this server
+      #
+      # @param [Class] collector A type collector for the prometheus server
+      #
+      def add_type_collector(collector)
+        runner.type_collectors = runner.type_collectors.push(collector)
       end
 
       private
 
-      def server_collector
-        @server_collector ||= PrometheusExporter::Server::Collector.new
+      ##
+      # @return [::PrometheusExporter::Server::Runner]
+      #
+      def runner
+        unless @runner
+          @runner = ::PrometheusExporter::Server::Runner.new(
+            timeout: @timeout,
+            port: @port,
+            prefix: @prefix,
+            verbose: @verbose
+          )
+          PrometheusExporter::Metric::Base.default_prefix = @runner.prefix
+        end
+        @runner
       end
 
+      ##
+      # Register signal handlers
+      #
+      # :nocov:
+      def setup_signal_handlers
+        ::Signal.trap('INT') { server.stop }
+        ::Signal.trap('TERM') { server.stop }
+      end
+      # :nocov:
+
+      ##
+      # @return [PrometheusExporter::Server::WebServer]
+      #
       def server
-        @server ||= ::PrometheusExporter::Server::WebServer.new(
-          port: @port,
-          collector: server_collector,
-          timeout: @timeout,
-          verbose: @verbose
-        )
+        @server ||= begin
+          runner.send(:register_type_collectors)
+          runner.server_class.new(
+            port: runner.port,
+            collector: runner.collector,
+            timeout: runner.timeout,
+            verbose: runner.verbose
+          )
+        end
       end
     end
   end

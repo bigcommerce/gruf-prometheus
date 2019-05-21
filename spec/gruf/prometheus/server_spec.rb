@@ -28,9 +28,7 @@ describe Gruf::Prometheus::Server do
   describe '.start' do
     subject { server.start }
 
-    it 'should start the server and setup signal handlers' do
-      expect(Signal).to receive(:trap).with('INT').once
-      expect(Signal).to receive(:trap).with('TERM').once
+    it 'should start the server' do
       expect(server.send(:server)).to receive(:start).once
       subject
       expect(server).to be_running
@@ -41,8 +39,6 @@ describe Gruf::Prometheus::Server do
 
       it 'should log an error' do
         expect(server).to_not be_running
-        expect(Signal).to receive(:trap).with('INT').once
-        expect(Signal).to receive(:trap).with('TERM').once
         expect(logger).to receive(:error).once
         expect(server.send(:server)).to receive(:start).once.and_raise(exception)
         subject

@@ -40,6 +40,8 @@ module Gruf
       def after_server_stop(server:)
         logger.debug "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping #{server.class}"
         prometheus_server.stop
+      rescue StandardError => e
+        logger.error "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Failed to stop gruf instrumentation - #{e.message} - #{e.backtrace[0..4].join("\n")}"
       end
 
       private

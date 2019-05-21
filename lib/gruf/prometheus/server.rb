@@ -47,8 +47,6 @@ module Gruf
       end
 
       def start
-        setup_signal_handlers
-
         logger.info "[gruf-prometheus][#{@process_name}] Starting prometheus exporter on port #{@port}"
         server.start
         logger.info "[gruf-prometheus][#{@process_name}] Prometheus exporter started on port #{@port}"
@@ -106,16 +104,6 @@ module Gruf
         end
         @runner
       end
-
-      ##
-      # Register signal handlers
-      #
-      # :nocov:
-      def setup_signal_handlers
-        ::Signal.trap('INT') { server.stop }
-        ::Signal.trap('TERM') { server.stop }
-      end
-      # :nocov:
 
       ##
       # @return [PrometheusExporter::Server::WebServer]

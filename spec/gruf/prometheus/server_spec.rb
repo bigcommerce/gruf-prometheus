@@ -17,10 +17,37 @@
 #
 require 'spec_helper'
 
-describe Gruf::Prometheus do
-  describe 'version' do
-    it 'should have a version' do
-      expect(Gruf::Prometheus::VERSION).to be_a(String)
+describe Gruf::Prometheus::Server do
+  let(:port) { 9000 }
+  let(:timeout) { 1 }
+  let(:prefix) { 'grpc' }
+  let(:verbose) { false }
+  
+  let(:server) { described_class.new(port: port, timeout: timeout, prefix: prefix, verbose: verbose, server_class: TestServerClass) }
+  
+  describe '.start' do
+    subject { server.start }
+
+    it 'should start the server and setup signal handlers' do
+      expect(Signal).to receive(:trap).with('INT').once
+      expect(Signal).to receive(:trap).with('TERM').once
+      expect(server.send(:server)).to receive(:start).once
+      subject
+      expect(server).to be_running
+    end
+
+    context 'if it fails to start' do
+      let(:exception) { StandardError.new('fail') }
+
+      it 'should log an error' do
+        expect(server).to_not be_running
+        expect(Signal).to receive(:trap).with('INT').once
+        expect(Signal).to receive(:trap).with('TERM').once
+        expect(logger).to receive(:error).once
+        expect(server.send(:server)).to receive(:start).once.and_raise(exception)
+        subject
+        expect(server).to_not be_running
+      end
     end
   end
 end

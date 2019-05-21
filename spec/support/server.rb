@@ -15,12 +15,19 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require 'spec_helper'
+class TestServerClass
+  def initialize(port:, collector: nil, timeout: PrometheusExporter::DEFAULT_TIMEOUT, verbose: false)
+    @port = port
+    @collector = collector
+    @timeout = timeout
+    @verbose = verbose
+  end
 
-describe Gruf::Prometheus do
-  describe 'version' do
-    it 'should have a version' do
-      expect(Gruf::Prometheus::VERSION).to be_a(String)
-    end
+  def start
+    true
+  end
+
+  def stop
+    true
   end
 end

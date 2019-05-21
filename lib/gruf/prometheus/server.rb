@@ -23,14 +23,27 @@ module Gruf
     class Server
       include Gruf::Loggable
 
-      def initialize(port:, timeout:, prefix: nil, verbose: false)
+      ##
+      # @param [Integer] port
+      # @param [Integer] timeout
+      # @param [String] prefix
+      # @param [Boolean] verbose
+      # @param [Class] server_class
+      #
+      def initialize(
+        port:,
+        timeout:,
+        prefix: nil,
+        verbose: false,
+        server_class: nil
+      )
         @port = (port || ::PrometheusExporter::DEFAULT_PORT).to_i
         @timeout = (timeout || ::PrometheusExporter::DEFAULT_TIMEOUT).to_i
         @prefix = (prefix || ::PrometheusExporter::DEFAULT_PREFIX).to_s
         @verbose = verbose
+        @server_class = server_class || ::PrometheusExporter::Server::WebServer
         @running = false
         @process_name = ::Gruf::Prometheus.process_name
-        @server = nil
       end
 
       def start
@@ -42,6 +55,8 @@ module Gruf
 
         @running = true
         server
+      rescue StandardError => e
+        logger.error "[gruf-prometheus][#{@process_name}] Failed to start exporter: #{e.message}"
       end
 
       ##
@@ -84,7 +99,8 @@ module Gruf
             timeout: @timeout,
             port: @port,
             prefix: @prefix,
-            verbose: @verbose
+            verbose: @verbose,
+            server_class: @server_class
           )
           PrometheusExporter::Metric::Base.default_prefix = @runner.prefix
         end

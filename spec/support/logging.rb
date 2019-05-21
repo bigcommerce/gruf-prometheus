@@ -15,12 +15,18 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require 'spec_helper'
+require 'null_logger'
 
-describe Gruf::Prometheus do
-  describe 'version' do
-    it 'should have a version' do
-      expect(Gruf::Prometheus::VERSION).to be_a(String)
-    end
+module GrufPrometheusLoggerHelper
+  def logger
+    Gruf.logger
   end
+end
+
+RSpec.configure do |config|
+  config.before do
+    Gruf.logger = NullLogger.new unless ENV.fetch('DEBUG', 0).to_i.positive?
+  end
+
+  include GrufPrometheusLoggerHelper
 end

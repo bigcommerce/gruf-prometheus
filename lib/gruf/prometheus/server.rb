@@ -54,7 +54,7 @@ module Gruf
         @running = true
         server
       rescue StandardError => e
-        logger.error "[gruf-prometheus][#{@process_name}] Failed to start exporter: #{e.message}"
+        logger.error "[gruf-prometheus][#{@process_name}] Failed to start exporter: #{e.message} - #{e.backtrace[0..4].join("\n")}"
       end
 
       ##
@@ -65,7 +65,7 @@ module Gruf
         server.stop
         logger.info "[gruf-prometheus][#{@process_name}] Prometheus exporter cleanly shut down"
       rescue StandardError => e
-        logger.error "[gruf-prometheus][#{@process_name}] Failed to stop exporter: #{e.message}"
+        logger.error "[gruf-prometheus][#{@process_name}] Failed to stop exporter: #{e.message} - #{e.backtrace[0..4].join("\n")}"
       end
 
       ##

@@ -69,7 +69,8 @@ module Gruf
         @prometheus_server ||= ::Gruf::Prometheus::Server.new(
           port: Gruf::Prometheus.server_port,
           timeout: Gruf::Prometheus.server_timeout,
-          prefix: Gruf::Prometheus.server_prefix
+          prefix: Gruf::Prometheus.server_prefix,
+          verbose: Gruf::Prometheus.server_verbose
         )
       end
     end

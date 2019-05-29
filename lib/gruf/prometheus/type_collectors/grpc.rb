@@ -72,7 +72,7 @@ module Gruf
           @pool_workers_total.observe(obj['pool_workers_total'], labels)
           @pool_initial_size.observe(obj['pool_initial_size'], labels)
           @poll_period.observe(obj['poll_period'], labels)
-          @thread_pool_exhausted.observe(obj['thread_pool_exhausted'], labels)
+          @thread_pool_exhausted.observe(obj['thread_pool_exhausted'] || 0, labels)
         end
       end
     end

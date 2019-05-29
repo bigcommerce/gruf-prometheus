@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+require 'active_support/all'
+require 'gruf'
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../pb', __FILE__)
+require 'gruf/prometheus'
+require 'thing_controller'
+
+Gruf::Prometheus.configure do |c|
+  c.server_verbose = true
+end
+Gruf.configure do |c|
+  c.server_binding_url = '0.0.0.0:9001'
+  c.backtrace_on_error = true
+  c.interceptors.use(
+    Gruf::Interceptors::Instrumentation::RequestLogging::Interceptor,
+    formatter: :plain,
+    log_parameters: true
+  )
+
+  c.event_listener_proc = lambda do |event|
+    case event
+    when :thread_pool_exhausted
+      Gruf::Prometheus.client.send_json(type: 'grpc', thread_pool_exhausted: 1)
+    end
+  end
+  c.hooks.use(Gruf::Prometheus::Hook)
+end
+
+Gruf.logger = Logger.new(STDOUT)
+Gruf.logger.level = Logger::Severity::INFO
+Gruf.grpc_logger = Logger.new(STDOUT)
+Gruf.grpc_logger.level = Logger::Severity::FATAL
+Gruf.services << ::Rpc::ThingService::Service
+
+cli = Gruf::Cli::Executor.new
+cli.run

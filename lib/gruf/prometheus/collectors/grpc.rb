@@ -38,6 +38,10 @@ module Gruf
         ##
         # Start the instrumentor
         #
+        # @param [Gruf::Server] server
+        # @param [Gruf::Prometheus::Client] client
+        # @param [Integer] frequency
+        #
         def self.start(server:, client: nil, frequency: nil)
           collector = new(server: server, client: client, frequency: frequency)
           Thread.new do

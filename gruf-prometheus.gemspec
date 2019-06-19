@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '>= 0.68'
   spec.add_development_dependency 'simplecov', '>= 0.16'
   spec.add_development_dependency 'null-logger', '>= 0.1'
+  spec.add_development_dependency 'pry', '>= 0.12'
 
   spec.add_runtime_dependency 'gruf', '>= 2.7'
   spec.add_runtime_dependency 'prometheus_exporter', '~> 0.4'

@@ -7,7 +7,7 @@ Adds Prometheus support for [gruf](https://github.com/bigcommerce/gruf) 2.7.0+.
 ## Installation
 
 ```ruby
-gem 'gruf-prometheus', git: 'git@github.com:bigcommerce/gruf-prometheus'
+gem 'gruf-prometheus'
 ```
 
 In your gruf initializer:
@@ -32,9 +32,11 @@ You can further configure with:
 | client_max_queue_size | The max amount of metrics to send before flushing | 10000 |
 | client_thread_sleep | How often to sleep the worker thread that manages the client buffer (seconds) | 0.5 |
 | process_label | The label to use for metric prefixing | grpc |
+| process_name | Label to use for process name in logging | grpc |
 | collection_frequency | How often to poll collection metrics (seconds) | 15 |
 | server_host | The host to run the collector on | '0.0.0.0' |
 | server_port | The port to run the collector on | 9394 |
+| server_prefix | The prefix for all collected metrics | ruby_ |
 | server_timeout | Timeout when exporting metrics (seconds) | 2 | 	
         
 ## License

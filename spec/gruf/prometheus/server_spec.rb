@@ -46,4 +46,57 @@ describe Gruf::Prometheus::Server do
       end
     end
   end
+
+  describe '.stop' do
+    subject { server.stop }
+
+    it 'should stop the server' do
+      expect(logger).to receive(:info).twice
+      expect(server.send(:server)).to receive(:stop).once
+      subject
+    end
+
+    context 'if the server fails to stop' do
+      let(:exception) { StandardError.new('fail') }
+
+      it 'should log an error' do
+        expect(logger).to receive(:error).once
+        expect(server.send(:server)).to receive(:stop).once.and_raise(exception)
+        subject
+      end
+    end
+  end
+
+  describe '.running?' do
+    subject { server.running? }
+
+    context 'if the server is running' do
+      before do
+        expect(server.send(:server)).to receive(:start).once
+        server.start
+      end
+
+      it 'should return true' do
+        expect(subject).to be_truthy
+      end
+    end
+
+    context 'if the server is not running' do
+      it 'should return false' do
+        expect(subject).to be_falsey
+      end
+    end
+  end
+
+  describe '.add_type_collector' do
+    let(:type_collector) { Gruf::Prometheus::TypeCollectors::Grpc.new }
+    let(:runner) { server.send(:runner) }
+
+    subject { server.add_type_collector(type_collector) }
+
+    it 'should add the type collector to the runner' do
+      subject
+      expect(runner.type_collectors).to include(type_collector)
+    end
+  end
 end

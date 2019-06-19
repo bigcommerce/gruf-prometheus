@@ -20,7 +20,9 @@ Gruf.configure do |c|
 end
 ```
 
-Then `bundle exec gruf` and you'll automatically have prometheus metrics for gruf servers.
+Then `bundle exec gruf` and you'll automatically have prometheus metrics for your gruf server.
+
+The gruf server will by default run on port 9394, and can be scraped at `/metrics`.
 
 ## Configuration
 

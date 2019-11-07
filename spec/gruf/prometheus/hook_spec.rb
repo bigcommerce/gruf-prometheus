@@ -23,13 +23,14 @@ describe Gruf::Prometheus::Hook do
   let(:hook) { described_class.new(options: options) }
   let(:port) { 9_394 }
   let(:timeout) { 1 }
-  let(:server) { Gruf::Prometheus::Server.new(port: port, timeout: timeout) }
+  let(:server) { Gruf::Server.new(port: port, timeout: timeout) }
   let(:prom_server) { hook.send(:prometheus_server) }
 
   describe '.before_server_start' do
     subject { hook.before_server_start(server: server) }
 
     it 'should start the collectors and the server' do
+      expect(logger).to_not receive(:error)
       expect(::PrometheusExporter::Instrumentation::Process).to receive(:start).once
       expect(::Gruf::Prometheus::Collectors::Grpc).to receive(:start).once
       expect(prom_server).to receive(:start).once
@@ -41,8 +42,8 @@ describe Gruf::Prometheus::Hook do
 
       it 'should log and error and proceed gracefully' do
         expect(logger).to receive(:error)
-        expect(::PrometheusExporter::Instrumentation::Process).to receive(:start).once
-        expect(::Gruf::Prometheus::Collectors::Grpc).to receive(:start).once
+        expect(::PrometheusExporter::Instrumentation::Process).to_not receive(:start)
+        expect(::Gruf::Prometheus::Collectors::Grpc).to_not receive(:start)
         expect(prom_server).to receive(:start).once.and_raise(exception)
         subject
       end

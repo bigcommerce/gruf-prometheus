@@ -1,6 +1,4 @@
-# frozen_string_literal: true
-
-# Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
+# Copyright (c) 2017-present, BigCommerce Pty. Ltd. All rights reserved
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -15,22 +13,13 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require 'spec_helper'
+require_relative 'rpc/ThingService_services_pb'
+require_relative 'rpc/Error_pb'
 
-describe Gruf::Prometheus::Client do
-  let(:client) { described_class.instance }
+class ThingController < ::Gruf::Controllers::Base
+  bind ::Rpc::ThingService::Service
 
-  describe '.initialize' do
-    subject { client }
-
-    it 'should initialize the client object from the singleton' do
-      expect(subject).to be_a(described_class)
-    end
-
-    it 'should behave like a singleton' do
-      ref1 = described_class.instance
-      ref2 = described_class.instance
-      expect(ref1).to eq ref2
-    end
+  def get_thing
+    Rpc::GetThingResponse.new(thing: Rpc::Thing.new(id: request.message.id, name: 'Johnny'))
   end
 end

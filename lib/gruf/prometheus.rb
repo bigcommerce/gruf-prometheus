@@ -15,17 +15,19 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+require 'multitrap'
 require 'prometheus_exporter'
 require 'prometheus_exporter/server'
 require 'prometheus_exporter/client'
 require 'prometheus_exporter/middleware'
 require 'prometheus_exporter/instrumentation'
 require 'gruf'
+require 'net/http'
+require 'logger'
+require 'bigcommerce/prometheus'
 
 require_relative 'prometheus/version'
 require_relative 'prometheus/configuration'
-require_relative 'prometheus/client'
-require_relative 'prometheus/server'
 require_relative 'prometheus/collectors/grpc'
 require_relative 'prometheus/type_collectors/grpc'
 require_relative 'prometheus/hook'
@@ -38,7 +40,7 @@ module Gruf
     extend Configuration
 
     def self.client
-      Gruf::Prometheus::Client.instance
+      Bigcommerce::Prometheus::Client.instance
     end
   end
 end

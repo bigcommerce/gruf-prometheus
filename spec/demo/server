@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 # Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
@@ -15,8 +16,26 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-module Gruf
-  module Prometheus
-    VERSION = '0.1.0'
-  end
+$LOAD_PATH.unshift File.expand_path('../../../lib', __FILE__)
+require 'gruf/prometheus'
+require_relative 'thing_controller'
+require 'logger'
+ENV['PROCESS'] = 'demo'
+
+logger = ::Logger.new(STDOUT)
+logger.level = ::Logger::Severity::DEBUG
+
+::Bigcommerce::Prometheus.configure do |c|
+  c.server_port = 8_622
+  c.server_host = '0.0.0.0'
+  c.logger = logger
 end
+
+::Gruf.configure do |c|
+  c.logger = logger
+  c.grpc_logger = logger
+  c.hooks.use(Gruf::Prometheus::Hook)
+end
+
+cli = Gruf::Cli::Executor.new(logger: logger)
+cli.run

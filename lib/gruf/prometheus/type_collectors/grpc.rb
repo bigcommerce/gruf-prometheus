@@ -67,12 +67,12 @@ module Gruf
           custom_labels = obj['custom_labels'] || {}
           labels = custom_labels.nil? ? default_labels : default_labels.merge(custom_labels)
 
-          @pool_jobs_waiting_total.observe(obj['pool_jobs_waiting_total'], labels)
-          @pool_ready_workers_total.observe(obj['pool_ready_workers_total'], labels)
-          @pool_workers_total.observe(obj['pool_workers_total'], labels)
-          @pool_initial_size.observe(obj['pool_initial_size'], labels)
-          @poll_period.observe(obj['poll_period'], labels)
-          @thread_pool_exhausted.observe(obj['thread_pool_exhausted'], labels)
+          @pool_jobs_waiting_total.observe(obj['pool_jobs_waiting_total'].to_i, labels)
+          @pool_ready_workers_total.observe(obj['pool_ready_workers_total'].to_i, labels)
+          @pool_workers_total.observe(obj['pool_workers_total'].to_i, labels)
+          @pool_initial_size.observe(obj['pool_initial_size'].to_i, labels)
+          @poll_period.observe(obj['poll_period'].to_i, labels)
+          @thread_pool_exhausted.observe(obj['thread_pool_exhausted'].to_i, labels)
         end
       end
     end

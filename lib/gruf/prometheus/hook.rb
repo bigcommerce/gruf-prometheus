@@ -27,9 +27,12 @@ module Gruf
       # @param [Gruf::Server] server
       #
       def before_server_start(server:)
-        start_collectors(server: server)
-        prometheus_server.add_type_collector(Gruf::Prometheus::TypeCollectors::Grpc)
+        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Starting #{server.class}"
+        prometheus_server.add_type_collector(::Gruf::Prometheus::TypeCollectors::Grpc.new)
+        prometheus_server.add_type_collector(::PrometheusExporter::Server::ActiveRecordCollector.new)
         prometheus_server.start
+        sleep 2 unless ENV['RACK_ENV'] == 'test' # wait for server to come online
+        start_collectors(server: server)
       rescue StandardError => e
         logger.error "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Failed to start gruf instrumentation - #{e.message} - #{e.backtrace[0..4].join("\n")}"
       end
@@ -38,7 +41,8 @@ module Gruf
       # Handle proper shutdown of the prometheus server
       #
       def after_server_stop(server:)
-        logger.debug "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping #{server.class}"
+        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping #{server.class}"
+        stop_collectors
         prometheus_server.stop
       rescue StandardError => e
         logger.error "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Failed to stop gruf instrumentation - #{e.message} - #{e.backtrace[0..4].join("\n")}"
@@ -52,24 +56,36 @@ module Gruf
       def start_collectors(server:)
         ::PrometheusExporter::Instrumentation::Process.start(
           type: ::Gruf::Prometheus.process_label,
-          client: ::Gruf::Prometheus.client,
+          client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency
         )
         ::Gruf::Prometheus::Collectors::Grpc.start(
           server: server,
-          client: ::Gruf::Prometheus.client,
+          client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency
         )
+      end
+
+      ##
+      # Stop collectors for the gRPC process
+      #
+      def stop_collectors
+        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping process collector..."
+        ::PrometheusExporter::Instrumentation::Process.stop
+        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping grpc collector..."
+        ::Gruf::Prometheus::Collectors::Grpc.stop
       end
 
       ##
       # @return [Gruf::Prometheus::Server]
       #
       def prometheus_server
-        @prometheus_server ||= ::Gruf::Prometheus::Server.new(
-          port: Gruf::Prometheus.server_port,
-          timeout: Gruf::Prometheus.server_timeout,
-          prefix: Gruf::Prometheus.server_prefix
+        @prometheus_server ||= ::Bigcommerce::Prometheus::Server.new(
+          host: Bigcommerce::Prometheus.server_host,
+          port: Bigcommerce::Prometheus.server_port,
+          timeout: Bigcommerce::Prometheus.server_timeout,
+          prefix: Bigcommerce::Prometheus.server_prefix,
+          logger: logger
         )
       end
     end

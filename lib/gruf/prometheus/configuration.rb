@@ -22,16 +22,9 @@ module Gruf
     #
     module Configuration
       VALID_CONFIG_KEYS = {
-        client_custom_labels: nil,
-        client_max_queue_size: 10_000,
-        client_thread_sleep: 0.5,
         process_label: 'grpc',
         process_name: 'grpc',
-        collection_frequency: 15,
-        server_host: '0.0.0.0',
-        server_port: ::PrometheusExporter::DEFAULT_PORT,
-        server_prefix: ::PrometheusExporter::DEFAULT_PREFIX,
-        server_timeout: ::PrometheusExporter::DEFAULT_TIMEOUT
+        collection_frequency: 30
       }.freeze
 
       attr_accessor *VALID_CONFIG_KEYS.keys
@@ -75,13 +68,9 @@ module Gruf
         VALID_CONFIG_KEYS.each do |k, v|
           send("#{k}=".to_sym, v)
         end
-        self.client_max_queue_size = ENV.fetch('PROMETHEUS_CLIENT_MAX_QUEUE_SIZE', 10_000).to_i
-        self.client_thread_sleep = ENV.fetch('PROMETHEUS_CLIENT_THREAD_SLEEP', 0.5).to_i
         self.process_label = ENV.fetch('PROMETHEUS_PROCESS_LABEL', 'grpc').to_s
+        self.process_name = ENV.fetch('PROMETHEUS_PROCESS_NAME', 'grpc').to_s
         self.collection_frequency = ENV.fetch('PROMETHEUS_COLLECTION_FREQUENCY', 30).to_i
-        self.server_host = ENV.fetch('PROMETHEUS_SERVER_HOST', '0.0.0.0').to_s
-        self.server_port = ENV.fetch('PROMETHEUS_SERVER_PORT', ::PrometheusExporter::DEFAULT_PORT).to_i
-        self.server_timeout = ENV.fetch('PROMETHEUS_SERVER_TIMEOUT', ::PrometheusExporter::DEFAULT_TIMEOUT).to_i
       end
 
       ##

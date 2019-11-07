@@ -36,24 +36,38 @@ module Gruf
         end
 
         ##
-        # Start the instrumentor
+        # Start the collector
         #
         # @param [Gruf::Server] server
         # @param [Gruf::Prometheus::Client] client
         # @param [Integer] frequency
         #
         def self.start(server:, client: nil, frequency: nil)
+          stop if @thread
+
+          client ||= Bigcommerce::Prometheus::Client.instance
           collector = new(server: server, client: client, frequency: frequency)
-          Thread.new do
+          @thread = Thread.new do
             loop do
               collector.run
             end
           end
         end
 
+        ##
+        # Stop the collector
+        #
+        def self.stop
+          t = @thread
+          return unless t
+
+          t.kill
+          @thread = nil
+        end
+
         def run
           metric = collect
-          logger.debug "[gruf-prometheus] Pushing metrics to collector: #{metric.inspect}"
+          logger.debug "[gruf-prometheus] Pushing gruf metrics to type collector: #{metric.inspect}"
           @client.send_json metric
         rescue StandardError => e
           logger.error "[gruf-prometheus] Failed to collect gruf-prometheus stats: #{e.message}"

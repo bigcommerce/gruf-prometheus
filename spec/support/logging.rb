@@ -19,13 +19,22 @@ require 'null_logger'
 
 module GrufPrometheusLoggerHelper
   def logger
-    Gruf.logger
+    Gruf.logger || NullLogger.new
+  end
+end
+class NullLogger
+  def level
+    Logger::Severity::DEBUG
+  end
+  def level=(_lvl)
+    nil
   end
 end
 
 RSpec.configure do |config|
   config.before do
     Gruf.logger = NullLogger.new unless ENV.fetch('DEBUG', 0).to_i.positive?
+    Gruf.grpc_logger = NullLogger.new unless ENV.fetch('DEBUG', 0).to_i.positive?
   end
 
   include GrufPrometheusLoggerHelper

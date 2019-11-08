@@ -40,8 +40,7 @@ module Gruf
       ##
       # Handle proper shutdown of the prometheus server
       #
-      def after_server_stop(server:)
-        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping #{server.class}"
+      def after_server_stop(*)
         stop_collectors
         prometheus_server.stop
       rescue StandardError => e
@@ -70,9 +69,7 @@ module Gruf
       # Stop collectors for the gRPC process
       #
       def stop_collectors
-        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping process collector..."
         ::PrometheusExporter::Instrumentation::Process.stop
-        logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Stopping grpc collector..."
         ::Gruf::Prometheus::Collectors::Grpc.stop
       end
 

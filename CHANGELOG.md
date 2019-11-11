@@ -2,6 +2,10 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 1.0.1
+
+- Bump bc-prometheus-ruby dependency
+
 ### 1.0.0
 
 - *Breaking Changes* Move all prometheus core dependencies to bc-prometheus-ruby  

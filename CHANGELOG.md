@@ -2,6 +2,9 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Refactor collector/type collector to utilize new base abstractions
+- Bump bc-prometheus-ruby dependency
+
 ### 1.0.2
 
 - Bump bc-prometheus-ruby dependency

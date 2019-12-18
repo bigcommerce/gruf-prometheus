@@ -21,89 +21,35 @@ module Gruf
       ##
       # Prometheus instrumentor for gRPC servers
       #
-      class Grpc
-        include Gruf::Loggable
+      class Grpc < Bigcommerce::Prometheus::Collectors::Base
+        def collect(metrics)
+          rpc_server = grpc_server
+          return metrics unless rpc_server
 
-        ##
-        # @param [Gruf::Server] server
-        # @param [Gruf::Prometheus::Client] client
-        # @param [Integer] frequency
-        #
-        def initialize(server:, client:, frequency: nil)
-          @server = server
-          @client = client
-          @frequency = frequency || 15
-        end
-
-        ##
-        # Start the collector
-        #
-        # @param [Gruf::Server] server
-        # @param [Gruf::Prometheus::Client] client
-        # @param [Integer] frequency
-        #
-        def self.start(server:, client: nil, frequency: nil)
-          stop if @thread
-
-          client ||= Bigcommerce::Prometheus::Client.instance
-          collector = new(server: server, client: client, frequency: frequency)
-          @thread = Thread.new do
-            loop do
-              collector.run
-            end
-          end
-        end
-
-        ##
-        # Stop the collector
-        #
-        def self.stop
-          t = @thread
-          return unless t
-
-          t.kill
-          @thread = nil
-        end
-
-        def run
-          metric = collect
-          logger.debug "[gruf-prometheus] Pushing gruf metrics to type collector: #{metric.inspect}"
-          @client.send_json metric
-        rescue StandardError => e
-          logger.error "[gruf-prometheus] Failed to collect gruf-prometheus stats: #{e.message}"
-        ensure
-          sleep @frequency
-        end
-
-        private
-
-        def collect
-          metric = {}
-          metric[:type] = 'grpc'
-          rpc_server = @server.server
           rpc_server.instance_variable_get(:@run_mutex).synchronize do
-            collect_server_metrics(rpc_server, metric)
+            collect_server_metrics(rpc_server, metrics)
           end
-          metric
+          metrics
         end
 
         ##
         # @param [GRPC::RpcServer] rpc_server
+        # @param [Hash] metrics
         #
-        def collect_server_metrics(rpc_server, metric)
+        def collect_server_metrics(rpc_server, metrics)
           pool = rpc_server.instance_variable_get(:@pool)
-          metric[:pool_jobs_waiting_total] = pool.jobs_waiting.to_i
-          metric[:pool_ready_workers_total] = pool.instance_variable_get(:@ready_workers).size
-          metric[:pool_workers_total] = pool.instance_variable_get(:@workers)&.size
-          metric[:pool_initial_size] = rpc_server.instance_variable_get(:@pool_size).to_i
-          metric[:poll_period] = rpc_server.instance_variable_get(:@poll_period).to_i
+          metrics[:pool_jobs_waiting_total] = pool.jobs_waiting.to_i
+          metrics[:pool_ready_workers_total] = pool.instance_variable_get(:@ready_workers).size
+          metrics[:pool_workers_total] = pool.instance_variable_get(:@workers)&.size
+          metrics[:pool_initial_size] = rpc_server.instance_variable_get(:@pool_size).to_i
+          metrics[:poll_period] = rpc_server.instance_variable_get(:@poll_period).to_i
         end
 
         ##
         # @return [GRPC::RpcServer]
         #
         def grpc_server
-          @server.server
+          @options.fetch(:server, nil)&.server
         end
       end
     end

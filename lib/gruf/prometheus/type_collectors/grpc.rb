@@ -21,58 +21,34 @@ module Gruf
       ##
       # Type Collector for prometheus and grpc instrumentation
       #
-      class Grpc < PrometheusExporter::Server::TypeCollector
+      class Grpc < Bigcommerce::Prometheus::TypeCollectors::Base
+
+        private
+
         ##
         # Initialize the collector
         #
-        def initialize
-          @pool_jobs_waiting_total = PrometheusExporter::Metric::Gauge.new('grpc_pool_jobs_waiting_total', 'Number jobs in the gRPC thread pool that are actively waiting')
-          @pool_ready_workers_total = PrometheusExporter::Metric::Gauge.new('grpc_pool_ready_workers_total', 'The amount of non-busy workers in the thread pool')
-          @pool_workers_total = PrometheusExporter::Metric::Gauge.new('grpc_pool_workers_total', 'Number of workers in the gRPC thread pool')
-          @pool_initial_size = PrometheusExporter::Metric::Gauge.new('grpc_pool_initial_size', 'Initial size of the gRPC thread pool')
-          @poll_period = PrometheusExporter::Metric::Gauge.new('grpc_poll_period', 'Polling period for the gRPC thread pool')
-          @thread_pool_exhausted = PrometheusExporter::Metric::Counter.new('grpc_thread_pool_exhausted', 'Times the gRPC thread pool has been exhausted')
-        end
-
-        ##
-        # @return [String]
-        #
-        def type
-          'grpc'
-        end
-
-        ##
-        # @return [Array]
-        #
-        def metrics
-          return [] unless @pool_jobs_waiting_total
-
-          [
-            @pool_jobs_waiting_total,
-            @pool_ready_workers_total,
-            @pool_workers_total,
-            @pool_initial_size,
-            @poll_period,
-            @thread_pool_exhausted
-          ]
+        def build_metrics
+          {
+            pool_jobs_waiting_total: PrometheusExporter::Metric::Gauge.new('grpc_pool_jobs_waiting_total', 'Number jobs in the gRPC thread pool that are actively waiting'),
+            pool_ready_workers_total: PrometheusExporter::Metric::Gauge.new('grpc_pool_ready_workers_total', 'The amount of non-busy workers in the thread pool'),
+            pool_workers_total: PrometheusExporter::Metric::Gauge.new('grpc_pool_workers_total', 'Number of workers in the gRPC thread pool'),
+            pool_initial_size: PrometheusExporter::Metric::Gauge.new('grpc_pool_initial_size', 'Initial size of the gRPC thread pool'),
+            poll_period: PrometheusExporter::Metric::Gauge.new('grpc_poll_period', 'Polling period for the gRPC thread pool'),
+            thread_pool_exhausted: PrometheusExporter::Metric::Counter.new('grpc_thread_pool_exhausted', 'Times the gRPC thread pool has been exhausted')
+          }
         end
 
         ##
         # Collect the object into the buffer
         #
-        def collect(obj)
-          default_labels = {}
-          default_labels['environment'] = obj['environment'] if obj['environment']
-
-          custom_labels = obj['custom_labels'] || {}
-          labels = custom_labels.nil? ? default_labels : default_labels.merge(custom_labels)
-
-          @pool_jobs_waiting_total.observe(obj['pool_jobs_waiting_total'].to_i, labels)
-          @pool_ready_workers_total.observe(obj['pool_ready_workers_total'].to_i, labels)
-          @pool_workers_total.observe(obj['pool_workers_total'].to_i, labels)
-          @pool_initial_size.observe(obj['pool_initial_size'].to_i, labels)
-          @poll_period.observe(obj['poll_period'].to_i, labels)
-          @thread_pool_exhausted.observe(obj['thread_pool_exhausted'].to_i, labels)
+        def collect_metrics(data: {}, labels: {})
+          metric(:pool_jobs_waiting_total)&.observe(data['pool_jobs_waiting_total'].to_i, labels)
+          metric(:pool_ready_workers_total)&.observe(data['pool_ready_workers_total'].to_i, labels)
+          metric(:pool_workers_total)&.observe(data['pool_workers_total'].to_i, labels)
+          metric(:pool_initial_size)&.observe(data['pool_initial_size'].to_i, labels)
+          metric(:poll_period)&.observe(data['poll_period'].to_i, labels)
+          metric(:thread_pool_exhausted)&.observe(data['thread_pool_exhausted'].to_i, labels)
         end
       end
     end

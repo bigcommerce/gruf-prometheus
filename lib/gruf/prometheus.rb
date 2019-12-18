@@ -27,8 +27,8 @@ require 'bigcommerce/prometheus'
 
 require_relative 'prometheus/version'
 require_relative 'prometheus/configuration'
-require_relative 'prometheus/collectors/grpc'
-require_relative 'prometheus/type_collectors/grpc'
+require_relative 'prometheus/collector'
+require_relative 'prometheus/type_collector'
 require_relative 'prometheus/hook'
 
 module Gruf

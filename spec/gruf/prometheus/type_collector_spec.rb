@@ -17,7 +17,7 @@
 #
 require 'spec_helper'
 
-describe Gruf::Prometheus::TypeCollectors::Grpc do
+describe Gruf::Prometheus::TypeCollector do
   let(:type_collector) { described_class.new }
 
   describe '.type' do
@@ -28,21 +28,21 @@ describe Gruf::Prometheus::TypeCollectors::Grpc do
     end
   end
 
-  describe '.metrics' do
-    subject { type_collector.metrics }
+  describe '.build_metrics' do
+    subject { type_collector.send(:build_metrics) }
 
     it 'should return all metrics as an array' do
-      expect(subject).to be_a(Array)
-      expect(subject[0].name).to eq 'grpc_pool_jobs_waiting_total'
-      expect(subject[1].name).to eq 'grpc_pool_ready_workers_total'
-      expect(subject[2].name).to eq 'grpc_pool_workers_total'
-      expect(subject[3].name).to eq 'grpc_pool_initial_size'
-      expect(subject[4].name).to eq 'grpc_poll_period'
-      expect(subject[5].name).to eq 'grpc_thread_pool_exhausted'
+      expect(subject).to be_a(Hash)
+      expect(subject[:pool_jobs_waiting_total].name).to eq 'grpc_pool_jobs_waiting_total'
+      expect(subject[:pool_ready_workers_total].name).to eq 'grpc_pool_ready_workers_total'
+      expect(subject[:pool_workers_total].name).to eq 'grpc_pool_workers_total'
+      expect(subject[:pool_initial_size].name).to eq 'grpc_pool_initial_size'
+      expect(subject[:poll_period].name).to eq 'grpc_poll_period'
+      expect(subject[:thread_pool_exhausted].name).to eq 'grpc_thread_pool_exhausted'
     end
   end
 
-  describe '.collect' do
+  describe '.collect_metrics' do
     let(:obj) do
       {
         'environment' => 'development',
@@ -56,7 +56,7 @@ describe Gruf::Prometheus::TypeCollectors::Grpc do
       }
     end
 
-    subject { type_collector.collect(obj) }
+    subject { type_collector.send(:collect_metrics, data: obj) }
 
     it 'should aggregate the values into the metrics' do
       subject
@@ -70,5 +70,4 @@ describe Gruf::Prometheus::TypeCollectors::Grpc do
       expect(metrics[5].data.values.first).to eq 2 # 'grpc_thread_pool_exhausted'
     end
   end
-
 end

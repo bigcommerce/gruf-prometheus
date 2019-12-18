@@ -17,16 +17,16 @@
 #
 require 'spec_helper'
 
-describe Gruf::Prometheus::Collectors::Grpc do
+describe Gruf::Prometheus::Collector do
   let(:pool) { TestGrpcPool.new }
   let(:client) { double(:client, send_json: true) }
   let(:pool) { TestGrpcPool.new }
   let(:server) { TestGrufServer.new(pool: pool) }
   let(:frequency) { 1 }
-  let(:collector) { described_class.new(server: server, client: client, frequency: frequency) }
+  let(:collector) { described_class.new(client: client, frequency: frequency, options: { server: server }) }
 
   describe '#start' do
-    subject { described_class.start(server: server, client: client, frequency: 1) }
+    subject { described_class.start(client: client, frequency: 1, options: { server: server }) }
 
     it 'should start a new thread in a loop, running the collector' do
       expect_any_instance_of(described_class).to receive(:run).at_least(:once)
@@ -60,9 +60,8 @@ describe Gruf::Prometheus::Collectors::Grpc do
         expect(client).to receive(:send_json).and_raise(exception)
       end
 
-      it 'should log an error and go back into the loop' do
+      it 'should go back into the loop' do
         expect(collector).to receive(:sleep).with(frequency).once
-        expect(logger).to receive(:error).once
         subject
       end
     end

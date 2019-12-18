@@ -28,7 +28,7 @@ module Gruf
       #
       def before_server_start(server:)
         logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Starting #{server.class}"
-        prometheus_server.add_type_collector(::Gruf::Prometheus::TypeCollectors::Grpc.new)
+        prometheus_server.add_type_collector(::Gruf::Prometheus::TypeCollector.new)
         prometheus_server.add_type_collector(::PrometheusExporter::Server::ActiveRecordCollector.new)
         prometheus_server.start
         sleep 2 unless ENV['RACK_ENV'] == 'test' # wait for server to come online
@@ -58,7 +58,7 @@ module Gruf
           client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency
         )
-        ::Gruf::Prometheus::Collectors::Grpc.start(
+        ::Gruf::Prometheus::Collector.start(
           options: {
             server: server
           },
@@ -72,7 +72,7 @@ module Gruf
       #
       def stop_collectors
         ::PrometheusExporter::Instrumentation::Process.stop
-        ::Gruf::Prometheus::Collectors::Grpc.stop
+        ::Gruf::Prometheus::Collector.stop
       end
 
       ##

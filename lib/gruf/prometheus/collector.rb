@@ -17,40 +17,43 @@
 #
 module Gruf
   module Prometheus
-    module Collectors
+    ##
+    # Prometheus instrumentor for gRPC servers
+    #
+    class Collector < Bigcommerce::Prometheus::Collectors::Base
+      def type
+        'grpc'
+      end
+
+      def collect(metrics = {})
+        metrics[:type] = 'grpc'
+        rpc_server = grpc_server
+        return metrics unless rpc_server
+
+        rpc_server.instance_variable_get(:@run_mutex).synchronize do
+          collect_server_metrics(rpc_server, metrics)
+        end
+        metrics
+      end
+
       ##
-      # Prometheus instrumentor for gRPC servers
+      # @param [GRPC::RpcServer] rpc_server
+      # @param [Hash] metrics
       #
-      class Grpc < Bigcommerce::Prometheus::Collectors::Base
-        def collect(metrics)
-          rpc_server = grpc_server
-          return metrics unless rpc_server
+      def collect_server_metrics(rpc_server, metrics)
+        pool = rpc_server.instance_variable_get(:@pool)
+        metrics[:pool_jobs_waiting_total] = pool.jobs_waiting.to_i
+        metrics[:pool_ready_workers_total] = pool.instance_variable_get(:@ready_workers).size
+        metrics[:pool_workers_total] = pool.instance_variable_get(:@workers)&.size
+        metrics[:pool_initial_size] = rpc_server.instance_variable_get(:@pool_size).to_i
+        metrics[:poll_period] = rpc_server.instance_variable_get(:@poll_period).to_i
+      end
 
-          rpc_server.instance_variable_get(:@run_mutex).synchronize do
-            collect_server_metrics(rpc_server, metrics)
-          end
-          metrics
-        end
-
-        ##
-        # @param [GRPC::RpcServer] rpc_server
-        # @param [Hash] metrics
-        #
-        def collect_server_metrics(rpc_server, metrics)
-          pool = rpc_server.instance_variable_get(:@pool)
-          metrics[:pool_jobs_waiting_total] = pool.jobs_waiting.to_i
-          metrics[:pool_ready_workers_total] = pool.instance_variable_get(:@ready_workers).size
-          metrics[:pool_workers_total] = pool.instance_variable_get(:@workers)&.size
-          metrics[:pool_initial_size] = rpc_server.instance_variable_get(:@pool_size).to_i
-          metrics[:poll_period] = rpc_server.instance_variable_get(:@poll_period).to_i
-        end
-
-        ##
-        # @return [GRPC::RpcServer]
-        #
-        def grpc_server
-          @options.fetch(:server, nil)&.server
-        end
+      ##
+      # @return [GRPC::RpcServer]
+      #
+      def grpc_server
+        @options.fetch(:server, nil)&.server
       end
     end
   end

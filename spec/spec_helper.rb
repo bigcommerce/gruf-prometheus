@@ -34,3 +34,7 @@ RSpec.configure do |config|
   end
   config.color = true
 end
+
+Bigcommerce::Prometheus.configure do |c|
+  c.logger = NullLogger.new
+end

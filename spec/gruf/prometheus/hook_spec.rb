@@ -32,7 +32,7 @@ describe Gruf::Prometheus::Hook do
     it 'should start the collectors and the server' do
       expect(logger).to_not receive(:error)
       expect(::PrometheusExporter::Instrumentation::Process).to receive(:start).once
-      expect(::Gruf::Prometheus::Collectors::Grpc).to receive(:start).once
+      expect(::Gruf::Prometheus::Collector).to receive(:start).once
       expect(prom_server).to receive(:start).once
       subject
     end
@@ -43,7 +43,7 @@ describe Gruf::Prometheus::Hook do
       it 'should log and error and proceed gracefully' do
         expect(logger).to receive(:error)
         expect(::PrometheusExporter::Instrumentation::Process).to_not receive(:start)
-        expect(::Gruf::Prometheus::Collectors::Grpc).to_not receive(:start)
+        expect(::Gruf::Prometheus::Collector).to_not receive(:start)
         expect(prom_server).to receive(:start).once.and_raise(exception)
         subject
       end

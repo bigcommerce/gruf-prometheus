@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 1.2.0
+
 - Add the ability to have custom collectors and type collectors
 
 ### 1.1.0

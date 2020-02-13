@@ -21,10 +21,6 @@ module Gruf
     # Prometheus instrumentor for gRPC servers
     #
     class Collector < Bigcommerce::Prometheus::Collectors::Base
-      def type
-        'grpc'
-      end
-
       def collect(metrics = {})
         metrics[:type] = 'grpc'
         rpc_server = grpc_server

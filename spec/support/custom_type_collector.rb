@@ -1,4 +1,4 @@
-# Copyright (c) 2017-present, BigCommerce Pty. Ltd. All rights reserved
+# Copyright (c) 2020-present, BigCommerce Pty. Ltd. All rights reserved
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -13,20 +13,23 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require_relative 'rpc/ThingService_services_pb'
-require_relative 'rpc/Error_pb'
+class CustomTypeCollector < ::Bigcommerce::Prometheus::TypeCollectors::Base
+  include ::Gruf::Loggable
 
-class ThingController < ::Gruf::Controllers::Base
-  bind ::Rpc::ThingService::Service
-
-  def get_thing
-    collector.bar_it_up(total: rand(1_000))
-    Rpc::GetThingResponse.new(thing: Rpc::Thing.new(id: request.message.id, name: 'Johnny'))
+  def build_metrics
+    {
+      polled_total: PrometheusExporter::Metric::Gauge.new('polled_total', 'Number of metric that is polled '),
+      on_demand_total: PrometheusExporter::Metric::Gauge.new('on_demand_total', 'Number of metric that is on-demand')
+    }
   end
 
-  private
+  ##
+  # The type collector here processes both polled and on-demand data, so we have to ensure key existence first
+  #
+  def collect_metrics(data:, labels: {})
+    logger.info "[gruf-prometheus] Received data and processing: #{data.inspect}"
 
-  def collector
-    @collector ||= ::CustomCollector.new
+    metric(:polled_total)&.observe(data['polled_total'], labels) if data.key?('polled_total')
+    metric(:on_demand_total)&.observe(data['on_demand_total'], labels) if data.key?('on_demand_total')
   end
 end

@@ -33,6 +33,8 @@ You can further configure via bc-prometheus-ruby with:
 | process_label | The label to use for metric prefixing | grpc |
 | process_name | Label to use for process name in logging | grpc | 	
 | collection_frequency | The period in seconds in which to collect metrics | 30 |
+| collectors | Any collectors you would like to start with the server. Passed as a hash of collector class => options | {} |
+| type_collectors | Any type collectors you would like to start with the server. Passed as an array of collector objects | [] |
         
 ## License
 

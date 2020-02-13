@@ -48,6 +48,37 @@ describe Gruf::Prometheus::Hook do
         subject
       end
     end
+
+    context 'if custom collectors are passed' do
+      let(:options) { { collectors: collectors } }
+      let(:collectors) do
+        {
+          CustomCollector => { type: 'custom' }
+        }
+      end
+
+      it 'should call start on all of them' do
+        expect(logger).to_not receive(:error)
+        expect(CustomCollector).to receive(:start).once
+        expect(prom_server).to receive(:start).once
+        subject
+      end
+    end
+
+    context 'if custom type collectors are passed' do
+      let(:options) { { type_collectors: type_collectors } }
+      let(:custom_collector) { CustomTypeCollector.new }
+      let(:type_collectors) { [custom_collector] }
+
+      it 'should add each of them - including the defaults - to the server' do
+        expect(logger).to_not receive(:error)
+        expect(prom_server).to receive(:add_type_collector).with(instance_of(::Gruf::Prometheus::TypeCollector)).ordered
+        expect(prom_server).to receive(:add_type_collector).with(instance_of(::PrometheusExporter::Server::ActiveRecordCollector)).ordered
+        expect(prom_server).to receive(:add_type_collector).with(custom_collector).ordered
+        expect(prom_server).to receive(:start).once
+        subject
+      end
+    end
   end
 
   describe '.after_server_stop' do

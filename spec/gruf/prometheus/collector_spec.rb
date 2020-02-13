@@ -23,7 +23,7 @@ describe Gruf::Prometheus::Collector do
   let(:pool) { TestGrpcPool.new }
   let(:server) { TestGrufServer.new(pool: pool) }
   let(:frequency) { 1 }
-  let(:collector) { described_class.new(client: client, frequency: frequency, options: { server: server }) }
+  let(:collector) { described_class.new(client: client, frequency: frequency, options: { server: server }, type: 'grpc') }
 
   describe '#start' do
     subject { described_class.start(client: client, frequency: 1, options: { server: server }) }

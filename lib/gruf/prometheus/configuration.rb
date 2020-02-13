@@ -24,7 +24,9 @@ module Gruf
       VALID_CONFIG_KEYS = {
         process_label: 'grpc',
         process_name: 'grpc',
-        collection_frequency: 30
+        collection_frequency: 30,
+        type_collectors: [],
+        collectors: []
       }.freeze
 
       attr_accessor *VALID_CONFIG_KEYS.keys

@@ -1,4 +1,7 @@
-# Copyright (c) 2017-present, BigCommerce Pty. Ltd. All rights reserved
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -13,20 +16,34 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require_relative 'rpc/ThingService_services_pb'
-require_relative 'rpc/Error_pb'
+$LOAD_PATH.unshift File.expand_path('../../../lib', __FILE__)
+require 'gruf/prometheus'
+require_relative 'thing_controller'
+require_relative '../support/custom_type_collector'
+require_relative '../support/custom_collector'
+require 'logger'
+ENV['PROCESS'] = 'demo'
 
-class ThingController < ::Gruf::Controllers::Base
-  bind ::Rpc::ThingService::Service
+logger = ::Logger.new(STDOUT)
+logger.level = ::Logger::Severity::DEBUG
 
-  def get_thing
-    collector.bar_it_up(total: rand(1_000))
-    Rpc::GetThingResponse.new(thing: Rpc::Thing.new(id: request.message.id, name: 'Johnny'))
-  end
-
-  private
-
-  def collector
-    @collector ||= ::CustomCollector.new
-  end
+::Bigcommerce::Prometheus.configure do |c|
+  c.server_port = 8_622
+  c.server_host = '0.0.0.0'
+  c.logger = logger
 end
+
+::Gruf.configure do |c|
+  c.logger = logger
+  c.grpc_logger = logger
+  c.server_binding_url = '0.0.0.0:8621'
+  c.hooks.use(
+    Gruf::Prometheus::Hook,
+    type_collectors: [CustomTypeCollector.new]
+  )
+end
+
+client = Gruf::Client.new(service: ::Rpc::ThingService, options: { hostname: '0.0.0.0:8621' })
+resp = client.call(:GetThing)
+
+logger.info resp.message

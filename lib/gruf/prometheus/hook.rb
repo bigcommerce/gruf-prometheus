@@ -30,6 +30,9 @@ module Gruf
         logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Starting #{server.class}"
         prometheus_server.add_type_collector(::Gruf::Prometheus::TypeCollector.new)
         prometheus_server.add_type_collector(::PrometheusExporter::Server::ActiveRecordCollector.new)
+        custom_type_collectors.each do |tc|
+          prometheus_server.add_type_collector(tc)
+        end
         prometheus_server.start
         sleep 2 unless ENV['RACK_ENV'] == 'test' # wait for server to come online
         start_collectors(server: server)
@@ -62,9 +65,13 @@ module Gruf
           options: {
             server: server
           },
+          type: 'grpc',
           client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency
         )
+        custom_collectors.each do |collector, arguments|
+          collector.start(arguments)
+        end
       end
 
       ##
@@ -86,6 +93,20 @@ module Gruf
           prefix: Bigcommerce::Prometheus.server_prefix,
           logger: logger
         )
+      end
+
+      ##
+      # @return [Array<Bigcommerce::Prometheus::TypeCollectors::Base>]
+      #
+      def custom_type_collectors
+        @options.fetch(:type_collectors, [])
+      end
+
+      ##
+      # @return [Array<Bigcommerce::Prometheus::Collectors::Base>]
+      #
+      def custom_collectors
+        @options.fetch(:collectors, [])
       end
     end
   end

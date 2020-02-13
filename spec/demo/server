@@ -19,6 +19,8 @@
 $LOAD_PATH.unshift File.expand_path('../../../lib', __FILE__)
 require 'gruf/prometheus'
 require_relative 'thing_controller'
+require_relative '../support/custom_type_collector'
+require_relative '../support/custom_collector'
 require 'logger'
 ENV['PROCESS'] = 'demo'
 
@@ -34,7 +36,15 @@ end
 ::Gruf.configure do |c|
   c.logger = logger
   c.grpc_logger = logger
-  c.hooks.use(Gruf::Prometheus::Hook)
+  c.server_binding_url = '0.0.0.0:8621'
+  c.hooks.use(Gruf::Prometheus::Hook,
+    type_collectors: [
+      CustomTypeCollector.new(type: 'custom')
+    ],
+    collectors: {
+      CustomCollector => { type: 'custom' }
+    }
+  )
 end
 
 cli = Gruf::Cli::Executor.new(logger: logger)

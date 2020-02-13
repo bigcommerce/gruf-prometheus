@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Add the ability to have custom collectors and type collectors
+
 ### 1.1.0
 
 - Refactor collector/type collector to utilize new base abstractions

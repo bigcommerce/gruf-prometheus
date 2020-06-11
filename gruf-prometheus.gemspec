@@ -42,5 +42,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry', '>= 0.12'
 
   spec.add_runtime_dependency 'gruf', '>= 2.7'
-  spec.add_runtime_dependency 'bc-prometheus-ruby', '~> 0.2'
+  spec.add_runtime_dependency 'bc-prometheus-ruby', '~> 0.3'
 end

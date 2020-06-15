@@ -2,6 +2,9 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Drop Ruby < 2.6 support
+- Bump bc-prometheus-ruby dependency to 0.3
+
 ### 1.2.0
 
 - Add the ability to have custom collectors and type collectors

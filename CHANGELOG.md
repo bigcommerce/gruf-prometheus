@@ -2,8 +2,12 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 1.3.0
+
 - Drop Ruby < 2.6 support
 - Bump bc-prometheus-ruby dependency to 0.3
+- Adds support for Ruby 2.7
+- Adds help script for testing locally
 
 ### 1.2.0
 

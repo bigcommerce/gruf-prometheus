@@ -1,6 +1,6 @@
 # gruf-prometheus - Prometheus support for gruf
 
-[![CircleCI](https://circleci.com/gh/bigcommerce/gruf-prometheus/tree/master.svg?style=svg)](https://circleci.com/gh/bigcommerce/gruf-prometheus/tree/master)  [![Gem Version](https://badge.fury.io/rb/gruf-prometheus.svg)](https://badge.fury.io/rb/gruf-prometheus) [![Documentation](https://inch-ci.org/github/bigcommerce/gruf-prometheus.svg?branch=master)](https://inch-ci.org/github/bigcommerce/gruf-prometheus?branch=master)
+[![CircleCI](https://circleci.com/gh/bigcommerce/gruf-prometheus/tree/main.svg?style=svg)](https://circleci.com/gh/bigcommerce/gruf-prometheus/tree/main)  [![Gem Version](https://badge.fury.io/rb/gruf-prometheus.svg)](https://badge.fury.io/rb/gruf-prometheus) [![Documentation](https://inch-ci.org/github/bigcommerce/gruf-prometheus.svg?branch=main)](https://inch-ci.org/github/bigcommerce/gruf-prometheus?branch=main)
 
 Adds Prometheus support for [gruf](https://github.com/bigcommerce/gruf) 2.7.0+.
 

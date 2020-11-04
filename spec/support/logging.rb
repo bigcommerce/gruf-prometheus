@@ -15,26 +15,16 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require 'null_logger'
-
 module GrufPrometheusLoggerHelper
   def logger
-    Gruf.logger || NullLogger.new
-  end
-end
-class NullLogger
-  def level
-    Logger::Severity::DEBUG
-  end
-  def level=(_lvl)
-    nil
+    Gruf.logger || Logger.new(File::NULL)
   end
 end
 
 RSpec.configure do |config|
   config.before do
-    Gruf.logger = NullLogger.new unless ENV.fetch('DEBUG', 0).to_i.positive?
-    Gruf.grpc_logger = NullLogger.new unless ENV.fetch('DEBUG', 0).to_i.positive?
+    Gruf.logger = Logger.new(File::NULL) unless ENV.fetch('DEBUG', 0).to_i.positive?
+    Gruf.grpc_logger = Logger.new(File::NULL) unless ENV.fetch('DEBUG', 0).to_i.positive?
   end
 
   include GrufPrometheusLoggerHelper

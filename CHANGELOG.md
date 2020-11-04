@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 2.0.0
+
 - Add server interceptor for measuring counters/histograms for server metrics
 - Add client interceptor for measuring counters/histograms for client metrics
 - Bump Rubocop to 1.1, remove development dependency on null_logger

@@ -29,6 +29,8 @@ module Gruf
       def before_server_start(server:)
         logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Starting #{server.class}"
         prometheus_server.add_type_collector(::Gruf::Prometheus::TypeCollector.new)
+        prometheus_server.add_type_collector(::Gruf::Prometheus::Server::TypeCollector.new)
+        prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)
         prometheus_server.add_type_collector(::PrometheusExporter::Server::ActiveRecordCollector.new)
         custom_type_collectors.each do |tc|
           prometheus_server.add_type_collector(tc)
@@ -83,7 +85,7 @@ module Gruf
       end
 
       ##
-      # @return [Gruf::Prometheus::Server]
+      # @return [Bigcommerce::Prometheus::Server]
       #
       def prometheus_server
         @prometheus_server ||= ::Bigcommerce::Prometheus::Server.new(
@@ -99,14 +101,14 @@ module Gruf
       # @return [Array<Bigcommerce::Prometheus::TypeCollectors::Base>]
       #
       def custom_type_collectors
-        @options.fetch(:type_collectors, [])
+        @options.fetch(:type_collectors, []) || []
       end
 
       ##
       # @return [Array<Bigcommerce::Prometheus::Collectors::Base>]
       #
       def custom_collectors
-        @options.fetch(:collectors, [])
+        @options.fetch(:collectors, []) || []
       end
     end
   end

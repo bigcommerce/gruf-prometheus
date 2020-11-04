@@ -15,8 +15,33 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+require 'grpc'
+require 'ThingService_pb'
+
 module Gruf
-  module Prometheus
-    VERSION = '2.0.0.pre'
+  module Demo
+    module ThingService
+      # Demonstration service
+      class Service
+
+        include GRPC::GenericService
+
+        self.marshal_class_method = :encode
+        self.unmarshal_class_method = :decode
+        self.service_name = 'gruf.demo.ThingService'
+
+        # Request calls
+        # For testing a request/response call
+        rpc :GetThing, GetThingRequest, GetThingResponse
+        # For testing a server streaming call
+        rpc :GetThings, GetThingsRequest, stream(Thing)
+        # For testing a client streaming call
+        rpc :CreateThings, stream(Thing), CreateThingsResponse
+        # For testing a bidirectional streaming call
+        rpc :CreateThingsInStream, stream(Thing), stream(Thing)
+      end
+
+      Stub = Service.rpc_stub_class
+    end
   end
 end

@@ -1,6 +1,6 @@
-# frozen_string_literal: true
-
-# Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
+#!/bin/bash
+# coding: utf-8
+# Copyright (c) 2017-present, BigCommerce Pty. Ltd. All rights reserved
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -15,8 +15,8 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-module Gruf
-  module Prometheus
-    VERSION = '2.0.0.pre'
-  end
-end
+set -e
+
+cd "$(dirname "$0")/"
+
+grpc_tools_ruby_protoc --ruby_out=./ --grpc_out=./ ./ThingService.proto

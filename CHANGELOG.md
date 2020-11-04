@@ -2,6 +2,9 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Add server interceptor for measuring counters/histograms for server metrics
+- Add client interceptor for measuring counters/histograms for client metrics
+
 ### 1.3.0
 
 - Drop Ruby < 2.6 support

@@ -17,6 +17,11 @@
 #
 module Gruf
   module Prometheus
-    VERSION = '2.0.0.pre'
+    module RequestTypes
+      UNARY = 'UNARY'
+      CLIENT_STREAM = 'CLIENT_STREAM'
+      SERVER_STREAM = 'SERVER_STREAM'
+      BIDI_STREAM = 'BIDI_STREAM'
+    end
   end
 end

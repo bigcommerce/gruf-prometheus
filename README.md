@@ -24,18 +24,118 @@ Then `bundle exec gruf` and you'll automatically have prometheus metrics for you
 
 The gruf server will by default run on port 9394, and can be scraped at `/metrics`.
 
+## Integrations
+
+### System Metrics
+
+The gem comes with general system metrics out of the box that illustrate server health/statistics:
+
+|Name|Type|Description|
+|---|---|---|
+|ruby_grpc_pool_jobs_waiting_total|gauge|Number of jobs in the gRPC thread pool that are actively waiting|
+|ruby_grpc_pool_ready_workers_total|gauge|The amount of non-busy workers in the thread pool|
+|ruby_grpc_pool_workers_total|gauge|Number of workers in the gRPC thread pool|
+|ruby_grpc_pool_initial_size|gauge|Initial size of the gRPC thread pool|
+|ruby_grpc_poll_period|gauge|Polling period for the gRPC thread pool|
+
+### Server Metrics
+
+Furthermore, the server interceptor measures general counts (and optionally, latencies), and can be setup via:
+
+```ruby
+::Gruf.interceptors.use(::Gruf::Prometheus::Server::Interceptor)
+```
+
+This will output the following metrics:
+
+|Name|Type|Description|
+|---|---|---|
+|ruby_grpc_server_started_total|counter|Total number of RPCs started on the server|
+|ruby_grpc_server_handled_total|counter|Total number of RPCs completed on the server, regardless of success or failure|
+|ruby_grpc_server_handled_latency_seconds|histogram|Histogram of response latency of RPCs handled by the server, in seconds|
+
+Note that the histogram is disabled by default - you'll have to turn it on either through the `server_measure_latency`
+configuration yielded in `Gruf::Prometheus.configure`, or through the `PROMETHEUS_SERVER_MEASURE_LATENCY` environment
+variable. Also, the `measure_latency: true` option can be passed as a second argument to `Gruf.interceptors.use` to 
+configure this directly in the interceptor.
+
+The precedence order for this is, from first to last, with last taking precedence:
+1) `measure_latency: true` passed into the interceptor 
+2) `Gruf::Prometheus.configure` explicit setting globally
+3) `PROMETHEUS_SERVER_MEASURE_LATENCY` ENV var globally. This is the only value set by default - to `false` - and will
+   be the default unless other methods are invoked.
+
+### Client Metrics
+
+gruf-prometheus can also measure gruf client timings, via the interceptor:
+
+```ruby
+Gruf::Client.new(
+  service: MyService,
+  client_options: {
+    interceptors: [Gruf::Prometheus::Client::Interceptor.new]
+  }
+)
+``` 
+
+|Name|Type|Description|
+|---|---|---|
+|ruby_grpc_client_started_total|counter|Total number of RPCs started by the client|
+|ruby_grpc_client_completed|counter|Total number of RPCs completed by the client, regardless of success or failure|
+|ruby_grpc_client_completed_latency_seconds|histogram|Histogram of response latency of RPCs completed by the client, in seconds|
+
+Note that the histogram is disabled by default - you'll have to turn it on either through the `client_measure_latency`
+configuration yielded in `Gruf::Prometheus.configure`, or through the `PROMETHEUS_CLIENT_MEASURE_LATENCY` environment
+variable. Optionally, you can pass in `measure_latency: true` into the Interceptor directly as an option argument in the 
+initializer. 
+
+The precedence order for this is, from first to last, with last taking precedence:
+1) `measure_latency: true` passed into the interceptor 
+2) `Gruf::Prometheus.configure` explicit setting globally
+3) `PROMETHEUS_CLIENT_MEASURE_LATENCY` ENV var globally. This is the only value set by default - to `false` - and will
+   be the default unless other methods are invoked. 
+
+### Running the Client Interceptor in Non-gRPC Processes
+
+One caveat is that you _must_ have the appropriate Type Collector setup in whatever process you are running in. If
+you are already doing this in a gruf gRPC service that is using the hook provided by this gem above, no further 
+configuration is needed. Otherwise, in whatever bc-prometheus-ruby configuration you have setup, you'll need to ensure
+the type collector is loaded: 
+
+```ruby
+# prometheus_server is whatever `::Bigcommerce::Prometheus::Server` instance you are using in the current process
+# Often hooks into these are exposed as configuration options, e.g. `web_collectors`, `resque_collectors`, etc
+prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)  
+```
+
+Note that you don't need to do this for the `Gruf::Prometheus::Client::Collector`, as it is an on-demand collector
+that does not run in a threaded loop.  
+
+See [bc-prometheus-ruby](https://github.com/bigcommerce/bc-prometheus-ruby#custom-server-integrations)'s documentation
+on custom server integrations for more information.
+
 ## Configuration
 
-You can further configure via bc-prometheus-ruby with:
+You can further configure `Gruf::Prometheus` globally using the block syntax:
 
-| Option | Description | Default |
-| ------ | ----------- | ------- |
-| process_label | The label to use for metric prefixing | grpc |
-| process_name | Label to use for process name in logging | grpc | 	
-| collection_frequency | The period in seconds in which to collect metrics | 30 |
-| collectors | Any collectors you would like to start with the server. Passed as a hash of collector class => options | {} |
-| type_collectors | Any type collectors you would like to start with the server. Passed as an array of collector objects | [] |
-        
+```ruby
+Gruf::Prometheus.configure do |config|
+  # config here
+end
+```
+
+where the options available are:
+
+| Option | Description | Default | ENV Name |
+| ------ | ----------- | ------- | -------- |
+| process_label | The label to use for metric prefixing | grpc | PROMETHEUS_PROCESS_LABEL |
+| process_name | Label to use for process name in logging | grpc | PROMETHEUS_PROCESS_NAME | 	
+| collection_frequency | The period in seconds in which to collect metrics | 30 | PROMETHEUS_COLLECTION_FREQUENCY |
+| collectors | Any collectors you would like to start with the server. Passed as a hash of collector class => options | {} | |
+| type_collectors | Any type collectors you would like to start with the server. Passed as an array of collector objects | [] | |
+| server_measure_latency| Whether or not to measure latency as a histogram for servers | 0 | PROMETHEUS_SERVER_MEASURE_LATENCY |
+| client_measure_latency| Whether or not to measure latency as a histogram for clients | 0 | PROMETHEUS_CLIENT_MEASURE_LATENCY |
+
 ## License
 
 Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved 

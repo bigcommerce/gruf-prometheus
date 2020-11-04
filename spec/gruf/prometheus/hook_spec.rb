@@ -73,6 +73,8 @@ describe Gruf::Prometheus::Hook do
       it 'should add each of them - including the defaults - to the server' do
         expect(logger).to_not receive(:error)
         expect(prom_server).to receive(:add_type_collector).with(instance_of(::Gruf::Prometheus::TypeCollector)).ordered
+        expect(prom_server).to receive(:add_type_collector).with(instance_of(::Gruf::Prometheus::Server::TypeCollector)).ordered
+        expect(prom_server).to receive(:add_type_collector).with(instance_of(::Gruf::Prometheus::Client::TypeCollector)).ordered
         expect(prom_server).to receive(:add_type_collector).with(instance_of(::PrometheusExporter::Server::ActiveRecordCollector)).ordered
         expect(prom_server).to receive(:add_type_collector).with(custom_collector).ordered
         expect(prom_server).to receive(:start).once

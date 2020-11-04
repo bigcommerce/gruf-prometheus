@@ -26,7 +26,9 @@ module Gruf
         process_name: 'grpc',
         collection_frequency: 30,
         type_collectors: [],
-        collectors: []
+        collectors: [],
+        client_measure_latency: false,
+        server_measure_latency: false
       }.freeze
 
       attr_accessor *VALID_CONFIG_KEYS.keys
@@ -41,13 +43,14 @@ module Gruf
       ##
       # Yield self for ruby-style initialization
       #
-      # @yields [Bigcommerce::Prometheus::Configuration]
-      # @return [Bigcommerce::Prometheus::Configuration]
+      # @yields [Gruf::Prometheus::Configuration]
+      # @return [Gruf::Prometheus::Configuration]
       #
       def configure
         reset unless @configured
         yield self
         @configured = true
+        self
       end
 
       ##
@@ -73,6 +76,8 @@ module Gruf
         self.process_label = ENV.fetch('PROMETHEUS_PROCESS_LABEL', 'grpc').to_s
         self.process_name = ENV.fetch('PROMETHEUS_PROCESS_NAME', 'grpc').to_s
         self.collection_frequency = ENV.fetch('PROMETHEUS_COLLECTION_FREQUENCY', 30).to_i
+        self.server_measure_latency = ENV.fetch('PROMETHEUS_SERVER_MEASURE_LATENCY', 0).to_i.positive?
+        self.client_measure_latency = ENV.fetch('PROMETHEUS_CLIENT_MEASURE_LATENCY', 0).to_i.positive?
       end
 
       ##

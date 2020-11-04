@@ -18,18 +18,18 @@
 require_relative '../pb/ThingService_services_pb'
 
 class TestGrpcPool
-  attr_reader :jobs_waiting, :ready_workers, :workers, :pool_size, :poll_period
+  attr_reader :jobs_waiting,
+              :ready_workers,
+              :workers,
+              :pool_size,
+              :poll_period
 
-  def initialize(jobs_waiting: 0, ready_workers: [], workers: [], pool_size: 10, poll_period: 30)
-    @jobs_waiting = jobs_waiting
-    @ready_workers = ready_workers
-    @workers = workers
-    @pool_size = pool_size
-    @poll_period = poll_period
-  end
-
-  def jobs_waiting
-    @jobs_waiting
+  def initialize(jobs_waiting: nil, ready_workers: nil, workers: nil, pool_size: nil, poll_period: nil)
+    @jobs_waiting = jobs_waiting || 0
+    @ready_workers = ready_workers || []
+    @workers = workers || []
+    @pool_size = pool_size || 10
+    @poll_period = poll_period || 30
   end
 end
 
@@ -44,8 +44,9 @@ end
 
 class TestGrufServer < ::Gruf::Server
   def initialize(server: nil, pool: nil, options: {})
-    pool = pool || TestGrpcPool.new
-    server = server || TestRpcServer.new(pool: pool)
+    pool ||= TestGrpcPool.new
+    server ||= TestRpcServer.new(pool: pool)
+    options ||= {}
 
     super(options)
     @server_mu.synchronize do

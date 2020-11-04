@@ -1,22 +1,24 @@
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.6
+  NewCops: enable
   Exclude:
-    - spec/**/*
+    - spec/gruf/**/*
+    - spec/**/*_pb.rb
     - .bundle/**/*
-    - bin/**/*
     - vendor/**/*
     - tmp/**/*
     - log/**/*
-    - Rakefile
-    - lib/gruf/prometheus/collectors/grpc.rb
-    - gruf-prometheus.gemspec
+require:
+  - rubocop-performance
+  - rubocop-thread_safety
+  - rubocop-packaging
 
 # Allow *VALID_CONFIG_KEYS.keys
 Lint/AmbiguousOperator:
   Enabled: false
 
 # This cop conflicts with other cops
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 
 Metrics/MethodLength:
@@ -24,3 +26,8 @@ Metrics/MethodLength:
 
 Metrics/AbcSize:
   Max: 40
+
+# Exclude gRPC method names in demo
+Naming/AccessorMethodName:
+  Exclude:
+    - spec/demo/**/*

@@ -31,10 +31,10 @@ Gem::Specification.new do |spec|
 
   spec.files         = Dir['README.md', 'CHANGELOG.md', 'CODE_OF_CONDUCT.md', 'lib/**/*', 'gruf-prometheus.gemspec']
   spec.require_paths = ['lib']
-  spec.required_ruby_version = '>= 2.6'
+  spec.required_ruby_version = '>= 2.6', '< 3.1'
 
   # Runtime dependencies
-  spec.add_runtime_dependency 'bc-prometheus-ruby', '~> 0.3'
+  spec.add_runtime_dependency 'bc-prometheus-ruby', '>= 0.5.1'
   spec.add_runtime_dependency 'gruf', '>= 2.7'
 
   # Development dependencies

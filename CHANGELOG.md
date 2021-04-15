@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 2.1.0
+
 - Add Ruby 3 support
 
 ### 2.0.0

@@ -51,7 +51,7 @@ module Gruf
         #
         def handled_latency_seconds(request:, result:)
           push(
-            grpc_server_handled_latency_seconds: result.elapsed.to_f,
+            grpc_server_handled_latency_seconds: result.elapsed.to_f / 1_000,
             custom_labels: custom_labels(request: request, result: result)
           )
         end

@@ -45,13 +45,13 @@ end
 class TestGrufServer < ::Gruf::Server
   def initialize(server: nil, pool: nil, options: {})
     pool ||= TestGrpcPool.new
-    server ||= TestRpcServer.new(pool: pool)
     options ||= {}
-
     super(options)
-    @server_mu.synchronize do
-      @server = server
-    end
+    @server ||= TestRpcServer.new(pool: pool)
+  end
+
+  def server
+    @server
   end
 
   def setup

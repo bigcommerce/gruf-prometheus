@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 2.2.0
+
 - Add Ruby 3.1 support
 - Drop support for Ruby 2.6
 - Add CircleCI test suite for Ruby 3.1

@@ -43,6 +43,13 @@ describe Gruf::Prometheus::Server::TypeCollector do
       expect(subject[:grpc_server_started_total].class).to eq PrometheusExporter::Metric::Counter
     end
 
+    it 'returns the grpc_server_failed_total metric' do
+      expect(subject).to be_a(Hash)
+      expect(subject[:grpc_server_failed_total].name).to eq 'grpc_server_failed_total'
+      expect(subject[:grpc_server_failed_total].type).to eq 'counter'
+      expect(subject[:grpc_server_failed_total].class).to eq PrometheusExporter::Metric::Counter
+    end
+
     it 'returns the grpc_server_handled_total metric' do
       expect(subject).to be_a(Hash)
       expect(subject[:grpc_server_handled_total].name).to eq 'grpc_server_handled_total'
@@ -75,6 +82,7 @@ describe Gruf::Prometheus::Server::TypeCollector do
         'environment' => 'development',
         'custom_labels' => { 'foo' => 'bar' },
         'grpc_server_started_total' => 1,
+        'grpc_server_failed_total' => 1,
         'grpc_server_handled_total' => 1,
       }
     end
@@ -84,9 +92,10 @@ describe Gruf::Prometheus::Server::TypeCollector do
     it 'aggregates the values into metrics' do
       subject
       metrics = type_collector.metrics
-      expect(metrics.count).to eq 2
+      expect(metrics.count).to eq 3
       expect(metrics[0].data.values.first).to eq 1 # 'grpc_server_started_total'
-      expect(metrics[1].data.values.first).to eq 1 # 'grpc_server_handled_total'
+      expect(metrics[1].data.values.first).to eq 1 # 'grpc_server_failed_total'
+      expect(metrics[2].data.values.first).to eq 1 # 'grpc_server_handled_total'
     end
 
     context 'when measuring latency is on' do
@@ -96,10 +105,11 @@ describe Gruf::Prometheus::Server::TypeCollector do
       it 'adds the latency histogram' do
         subject
         metrics = type_collector.metrics
-        expect(metrics.count).to eq 3
+        expect(metrics.count).to eq 4
         expect(metrics[0].data.values.first).to eq 1 # 'grpc_server_started_total'
-        expect(metrics[1].data.values.first).to eq 1 # 'grpc_server_handled_total'
-        expect(metrics[2].to_h.first.last).to eq('count' => 1, 'sum' => 20.2) # 'grpc_server_handled_latency_seconds'
+        expect(metrics[1].data.values.first).to eq 1 # 'grpc_server_failed_total'
+        expect(metrics[2].data.values.first).to eq 1 # 'grpc_server_handled_total'
+        expect(metrics[3].to_h.first.last).to eq('count' => 1, 'sum' => 20.2) # 'grpc_server_handled_latency_seconds'
       end
     end
   end

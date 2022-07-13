@@ -34,6 +34,7 @@ module Gruf
         def build_metrics
           metrics = {
             grpc_server_started_total: PrometheusExporter::Metric::Counter.new('grpc_server_started_total', 'Total number of RPCs started on the server'),
+            grpc_server_failed_total: PrometheusExporter::Metric::Counter.new('grpc_server_failed_total', 'Total number of RPCs failed on the server'),
             grpc_server_handled_total: PrometheusExporter::Metric::Counter.new('grpc_server_handled_total', 'Total number of RPCs completed on the server, regardless of success or failure')
           }
           metrics[:grpc_server_handled_latency_seconds] = PrometheusExporter::Metric::Histogram.new('grpc_server_handled_latency_seconds', 'Histogram of response latency of RPCs handled by the server, in seconds') if measure_latency?
@@ -45,6 +46,7 @@ module Gruf
         #
         def collect_metrics(data: {}, labels: {})
           metric(:grpc_server_started_total)&.observe(data['grpc_server_started_total'].to_i, labels)
+          metric(:grpc_server_failed_total)&.observe(data['grpc_server_failed_total'].to_i, labels)
           metric(:grpc_server_handled_total)&.observe(data['grpc_server_handled_total'].to_i, labels)
           metric(:grpc_server_handled_latency_seconds)&.observe(data['grpc_server_handled_latency_seconds'].to_f, labels) if measure_latency?
         end

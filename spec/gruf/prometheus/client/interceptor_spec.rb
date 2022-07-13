@@ -78,6 +78,7 @@ describe Gruf::Prometheus::Client::Interceptor do
 
       it 'still sends metrics and re-raises the exception' do
         expect(collector).to receive(:started_total).once
+        expect(collector).to receive(:failed_total).once
         expect(collector).to receive(:completed).once
         expect { subject }.to raise_error(exception)
       end

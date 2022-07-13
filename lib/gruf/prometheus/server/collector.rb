@@ -23,7 +23,15 @@ module Gruf
       #
       class Collector < Bigcommerce::Prometheus::Collectors::Base
         RESPONSE_CODE_OK = 'OK'
-        FAILURE_CLASSES = %w[GRPC::Unknown GRPC::Internal GRPC::DataLoss GRPC::FailedPrecondition GRPC::Unavailable GRPC::DeadlineExceeded GRPC::Cancelled].freeze
+        FAILURE_CLASSES = %w[
+          GRPC::Unknown
+          GRPC::Internal
+          GRPC::DataLoss
+          GRPC::FailedPrecondition
+          GRPC::Unavailable
+          GRPC::DeadlineExceeded
+          GRPC::Cancelled
+        ].freeze
 
         ##
         # @param [Gruf::Controller::Request] request

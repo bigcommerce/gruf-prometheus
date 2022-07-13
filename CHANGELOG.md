@@ -2,6 +2,9 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Add server collector and interceptor for measuring server failures
+- Add client collector and interceptor for measuring client failures
+
 ### 2.2.0
 
 - Add Ruby 3.1 support
@@ -44,7 +47,7 @@ Changelog for the gruf-prometheus gem.
 
 ### 1.0.0
 
-- *Breaking Changes* Move all prometheus core dependencies to bc-prometheus-ruby  
+- *Breaking Changes* Move all prometheus core dependencies to bc-prometheus-ruby
 
 ### 0.0.2
 

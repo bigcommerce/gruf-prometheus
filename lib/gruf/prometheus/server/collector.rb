@@ -23,6 +23,7 @@ module Gruf
       #
       class Collector < Bigcommerce::Prometheus::Collectors::Base
         RESPONSE_CODE_OK = 'OK'
+        FAILURE_CLASSES = %w[GRPC::Unknown GRPC::Internal GRPC::DataLoss GRPC::FailedPrecondition GRPC::Unavailable GRPC::DeadlineExceeded GRPC::Cancelled].freeze
 
         ##
         # @param [Gruf::Controller::Request] request
@@ -30,6 +31,19 @@ module Gruf
         def started_total(request:)
           push(
             grpc_server_started_total: 1,
+            custom_labels: custom_labels(request: request)
+          )
+        end
+
+        ##
+        # @param [Gruf::Controller::Request] request
+        # @param [Gruf::Interceptors::Timer::Result] result
+        #
+        def failed_total(request:, result:)
+          return unless failure?(result)
+
+          push(
+            grpc_server_failed_total: 1,
             custom_labels: custom_labels(request: request)
           )
         end
@@ -115,6 +129,14 @@ module Gruf
           else
             Gruf::Prometheus::RequestTypes::UNARY
           end
+        end
+
+        ##
+        # @param [Gruf::Interceptors::Timer::Result] result
+        # @return [Boolean]
+        #
+        def failure?(result)
+          FAILURE_CLASSES.include?(result.message_class_name)
         end
       end
     end

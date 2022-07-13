@@ -51,16 +51,17 @@ This will output the following metrics:
 |Name|Type|Description|
 |---|---|---|
 |ruby_grpc_server_started_total|counter|Total number of RPCs started on the server|
+|ruby_grpc_server_failed_total|counter|Total number of RPCs that throw an unknown, internal, data loss, failed precondition, unavailable, deadline exceeded, or cancelled exception on the server|
 |ruby_grpc_server_handled_total|counter|Total number of RPCs completed on the server, regardless of success or failure|
 |ruby_grpc_server_handled_latency_seconds|histogram|Histogram of response latency of RPCs handled by the server, in seconds|
 
 Note that the histogram is disabled by default - you'll have to turn it on either through the `server_measure_latency`
 configuration yielded in `Gruf::Prometheus.configure`, or through the `PROMETHEUS_SERVER_MEASURE_LATENCY` environment
-variable. Also, the `measure_latency: true` option can be passed as a second argument to `Gruf.interceptors.use` to 
+variable. Also, the `measure_latency: true` option can be passed as a second argument to `Gruf.interceptors.use` to
 configure this directly in the interceptor.
 
 The precedence order for this is, from first to last, with last taking precedence:
-1) `measure_latency: true` passed into the interceptor 
+1) `measure_latency: true` passed into the interceptor
 2) `Gruf::Prometheus.configure` explicit setting globally
 3) `PROMETHEUS_SERVER_MEASURE_LATENCY` ENV var globally. This is the only value set by default - to `false` - and will
    be the default unless other methods are invoked.
@@ -76,40 +77,41 @@ Gruf::Client.new(
     interceptors: [Gruf::Prometheus::Client::Interceptor.new]
   }
 )
-``` 
+```
 
 |Name|Type|Description|
 |---|---|---|
 |ruby_grpc_client_started_total|counter|Total number of RPCs started by the client|
+|ruby_grpc_client_failed_total|counter|Total number of RPCs that throw an unknown, internal, data loss, failed precondition, unavailable, deadline exceeded, or cancelled exception by the client|
 |ruby_grpc_client_completed|counter|Total number of RPCs completed by the client, regardless of success or failure|
 |ruby_grpc_client_completed_latency_seconds|histogram|Histogram of response latency of RPCs completed by the client, in seconds|
 
 Note that the histogram is disabled by default - you'll have to turn it on either through the `client_measure_latency`
 configuration yielded in `Gruf::Prometheus.configure`, or through the `PROMETHEUS_CLIENT_MEASURE_LATENCY` environment
-variable. Optionally, you can pass in `measure_latency: true` into the Interceptor directly as an option argument in the 
-initializer. 
+variable. Optionally, you can pass in `measure_latency: true` into the Interceptor directly as an option argument in the
+initializer.
 
 The precedence order for this is, from first to last, with last taking precedence:
-1) `measure_latency: true` passed into the interceptor 
+1) `measure_latency: true` passed into the interceptor
 2) `Gruf::Prometheus.configure` explicit setting globally
 3) `PROMETHEUS_CLIENT_MEASURE_LATENCY` ENV var globally. This is the only value set by default - to `false` - and will
-   be the default unless other methods are invoked. 
+   be the default unless other methods are invoked.
 
 ### Running the Client Interceptor in Non-gRPC Processes
 
 One caveat is that you _must_ have the appropriate Type Collector setup in whatever process you are running in. If
-you are already doing this in a gruf gRPC service that is using the hook provided by this gem above, no further 
+you are already doing this in a gruf gRPC service that is using the hook provided by this gem above, no further
 configuration is needed. Otherwise, in whatever bc-prometheus-ruby configuration you have setup, you'll need to ensure
-the type collector is loaded: 
+the type collector is loaded:
 
 ```ruby
 # prometheus_server is whatever `::Bigcommerce::Prometheus::Server` instance you are using in the current process
 # Often hooks into these are exposed as configuration options, e.g. `web_collectors`, `resque_collectors`, etc
-prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)  
+prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)
 ```
 
 Note that you don't need to do this for the `Gruf::Prometheus::Client::Collector`, as it is an on-demand collector
-that does not run in a threaded loop.  
+that does not run in a threaded loop.
 
 See [bc-prometheus-ruby](https://github.com/bigcommerce/bc-prometheus-ruby#custom-server-integrations)'s documentation
 on custom server integrations for more information.
@@ -129,7 +131,7 @@ where the options available are:
 | Option | Description | Default | ENV Name |
 | ------ | ----------- | ------- | -------- |
 | process_label | The label to use for metric prefixing | grpc | PROMETHEUS_PROCESS_LABEL |
-| process_name | Label to use for process name in logging | grpc | PROMETHEUS_PROCESS_NAME | 	
+| process_name | Label to use for process name in logging | grpc | PROMETHEUS_PROCESS_NAME |
 | collection_frequency | The period in seconds in which to collect metrics | 30 | PROMETHEUS_COLLECTION_FREQUENCY |
 | collectors | Any collectors you would like to start with the server. Passed as a hash of collector class => options | {} | |
 | type_collectors | Any type collectors you would like to start with the server. Passed as an array of collector objects | [] | |
@@ -138,17 +140,17 @@ where the options available are:
 
 ## License
 
-Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved 
+Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
-documentation files (the "Software"), to deal in the Software without restriction, including without limitation the 
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the 
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
 Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

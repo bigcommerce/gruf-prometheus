@@ -54,6 +54,36 @@ describe Gruf::Prometheus::Client::Collector do
     end
   end
 
+  describe '#failed_total' do
+    subject { collector.failed_total(request_context: request_context, result: timed_result) }
+    let(:timed_result) { Gruf::Interceptors::Timer::Result.new(result, 2.0, false) }
+
+    context 'when the result is an exception in the FAILURE_CLASSES' do
+      let(:result) { GRPC::Internal.new('fail') }
+
+      it 'pushes the grpc_client_failed_total to the server' do
+        expect(collector).to receive(:push).with(
+          grpc_client_failed_total: 1,
+            custom_labels: {
+              grpc_method: 'GetThing',
+              grpc_service: 'gruf.demo.Things',
+              grpc_type: 'UNARY',
+            }
+        )
+        subject
+      end
+    end
+
+    context 'when the result is not an exception in the FAILURE_CLASSES' do
+      let(:result) { GRPC::NotFound.new('fail') }
+
+      it 'does not push to the server' do
+        expect(collector).not_to receive(:push)
+        subject
+      end
+    end
+  end
+
   describe '#handled_total' do
     subject { collector.completed(request_context: request_context, result: timed_result) }
 

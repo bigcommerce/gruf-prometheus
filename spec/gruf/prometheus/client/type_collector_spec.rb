@@ -43,6 +43,13 @@ describe Gruf::Prometheus::Client::TypeCollector do
       expect(subject[:grpc_client_started_total].class).to eq PrometheusExporter::Metric::Counter
     end
 
+    it 'returns the grpc_client_failed_total metric' do
+      expect(subject).to be_a(Hash)
+      expect(subject[:grpc_client_failed_total].name).to eq 'grpc_client_failed_total'
+      expect(subject[:grpc_client_failed_total].type).to eq 'counter'
+      expect(subject[:grpc_client_failed_total].class).to eq PrometheusExporter::Metric::Counter
+    end
+
     it 'returns the grpc_client_completed metric' do
       expect(subject).to be_a(Hash)
       expect(subject[:grpc_client_completed].name).to eq 'grpc_client_completed'
@@ -75,6 +82,7 @@ describe Gruf::Prometheus::Client::TypeCollector do
         'environment' => 'development',
         'custom_labels' => { 'foo' => 'bar' },
         'grpc_client_started_total' => 1,
+        'grpc_client_failed_total' => 1,
         'grpc_client_completed' => 1,
       }
     end
@@ -85,7 +93,8 @@ describe Gruf::Prometheus::Client::TypeCollector do
       subject
       metrics = type_collector.metrics
       expect(metrics[0].data.values.first).to eq 1 # 'grpc_client_started_total'
-      expect(metrics[1].data.values.first).to eq 1 # 'grpc_client_completed'
+      expect(metrics[1].data.values.first).to eq 1 # 'grpc_client_failed_total'
+      expect(metrics[2].data.values.first).to eq 1 # 'grpc_client_completed'
     end
 
     context 'when measuring latency is on' do
@@ -96,8 +105,9 @@ describe Gruf::Prometheus::Client::TypeCollector do
         subject
         metrics = type_collector.metrics
         expect(metrics[0].data.values.first).to eq 1 # 'grpc_client_started_total'
-        expect(metrics[1].data.values.first).to eq 1 # 'grpc_client_completed'
-        expect(metrics[2].to_h.first.last).to eq('count' => 1, 'sum' => 20.2) # 'grpc_client_completed_latency_seconds'
+        expect(metrics[1].data.values.first).to eq 1 # 'grpc_client_failed_total'
+        expect(metrics[2].data.values.first).to eq 1 # 'grpc_client_completed'
+        expect(metrics[3].to_h.first.last).to eq('count' => 1, 'sum' => 20.2) # 'grpc_client_completed_latency_seconds'
       end
     end
   end

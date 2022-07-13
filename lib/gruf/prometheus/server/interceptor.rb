@@ -42,7 +42,7 @@ module Gruf
         #
         def send_metrics(result)
           prometheus_collector.started_total(request: request)
-          prometheus_collector.failed_total(request: request, result: result)
+          prometheus_collector.failed_total(request: request, result: result) if !result.successful?
           prometheus_collector.handled_total(request: request, result: result)
           prometheus_collector.handled_latency_seconds(request: request, result: result) if measure_latency?
         rescue StandardError => e

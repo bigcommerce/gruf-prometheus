@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 2.3.0
+
 - Add server collector and interceptor for measuring server failures
 - Add client collector and interceptor for measuring client failures
 

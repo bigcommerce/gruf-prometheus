@@ -63,6 +63,12 @@ module Gruf
           client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency
         )
+        if active_record_enabled?
+          ::PrometheusExporter::Instrumentation::ActiveRecord.start(
+            client: ::Bigcommerce::Prometheus.client,
+            frequency: ::Gruf::Prometheus.collection_frequency
+          )
+        end
         ::Gruf::Prometheus::Collector.start(
           options: {
             server: server
@@ -109,6 +115,15 @@ module Gruf
       #
       def custom_collectors
         @options.fetch(:collectors, []) || []
+      end
+
+      ##
+      # @return [Boolean]
+      #
+      def active_record_enabled?
+        defined?(ActiveRecord) && ::ActiveRecord::Base.connection_pool.respond_to?(:stat)
+      rescue StandardError => _e
+        false
       end
     end
   end

@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+### 2.3.1
+
 - Ensure ActiveRecord collector is started on gruf hook
 
 ### 2.3.0

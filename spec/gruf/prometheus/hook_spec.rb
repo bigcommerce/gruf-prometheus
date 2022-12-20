@@ -29,9 +29,10 @@ describe Gruf::Prometheus::Hook do
   describe '.before_server_start' do
     subject { hook.before_server_start(server: server) }
 
-    it 'should start the collectors and the server' do
+    it 'starts the collectors and the server' do
       expect(logger).to_not receive(:error)
       expect(::PrometheusExporter::Instrumentation::Process).to receive(:start).once
+      expect(::PrometheusExporter::Instrumentation::ActiveRecord).not_to receive(:start)
       expect(::Gruf::Prometheus::Collector).to receive(:start).once
       expect(prom_server).to receive(:start).once
       subject
@@ -40,12 +41,28 @@ describe Gruf::Prometheus::Hook do
     context 'if the server fails to start' do
       let(:exception) { StandardError.new('fail') }
 
-      it 'should log and error and proceed gracefully' do
+      it 'logs an error and proceeds gracefully' do
         expect(logger).to receive(:error)
-        expect(::PrometheusExporter::Instrumentation::Process).to_not receive(:start)
+        expect(::PrometheusExporter::Instrumentation::Process).not_to receive(:start)
+        expect(::PrometheusExporter::Instrumentation::ActiveRecord).not_to receive(:start)
         expect(::Gruf::Prometheus::Collector).to_not receive(:start)
         expect(prom_server).to receive(:start).once.and_raise(exception)
         subject
+      end
+    end
+
+    context 'when active record is loaded' do
+      before do
+        allow(hook).to receive(:active_record_enabled?).and_return(true)
+      end
+
+      it 'starts the active record collector' do
+        expect(::PrometheusExporter::Instrumentation::Process).to receive(:start)
+        expect(::PrometheusExporter::Instrumentation::ActiveRecord).to receive(:start)
+        expect(::Gruf::Prometheus::Collector).to receive(:start)
+        expect(prom_server).to receive(:start).once
+        subject
+
       end
     end
 
@@ -57,7 +74,7 @@ describe Gruf::Prometheus::Hook do
         }
       end
 
-      it 'should call start on all of them' do
+      it 'calls start on all of them' do
         expect(logger).to_not receive(:error)
         expect(CustomCollector).to receive(:start).once
         expect(prom_server).to receive(:start).once

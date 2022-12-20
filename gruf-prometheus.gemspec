@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.description   = spec.summary
   spec.homepage      = 'https://github.com/bigcommerce/gruf-prometheus'
   spec.license       = 'MIT'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files         = Dir['README.md', 'CHANGELOG.md', 'CODE_OF_CONDUCT.md', 'lib/**/*', 'gruf-prometheus.gemspec']
   spec.require_paths = ['lib']

@@ -43,15 +43,13 @@ class TestRpcServer
 end
 
 class TestGrufServer < ::Gruf::Server
+  attr_reader :server
+
   def initialize(server: nil, pool: nil, options: {})
     pool ||= TestGrpcPool.new
     options ||= {}
     super(options)
-    @server ||= TestRpcServer.new(pool: pool)
-  end
-
-  def server
-    @server
+    @server = server || TestRpcServer.new(pool: pool)
   end
 
   def setup

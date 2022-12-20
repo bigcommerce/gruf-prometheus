@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Ensure ActiveRecord collector is started on gruf hook
+
 ### 2.3.0
 
 - Add server collector and interceptor for measuring server failures

@@ -17,6 +17,6 @@
 #
 module Gruf
   module Prometheus
-    VERSION = '2.3.2.pre'
+    VERSION = '2.4.0'
   end
 end

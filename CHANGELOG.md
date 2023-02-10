@@ -2,6 +2,9 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Add support for Ruby 3.2
+- Drop support for Ruby 2.7 (EOL March 2023)
+
 ### 2.3.1
 
 - Ensure ActiveRecord collector is started on gruf hook

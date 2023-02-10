@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.0
   NewCops: enable
   Exclude:
     - spec/gruf/**/*
@@ -31,3 +31,6 @@ Metrics/AbcSize:
 Naming/AccessorMethodName:
   Exclude:
     - spec/demo/**/*
+
+Style/RedundantConstantBase:
+  Enabled: false

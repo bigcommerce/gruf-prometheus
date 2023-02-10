@@ -22,7 +22,7 @@ require_relative 'simplecov_helper'
 require 'gruf/prometheus'
 require 'pry'
 
-Dir["#{File.join(File.dirname(__FILE__), 'support')}/**/*.rb"].sort.each { |f| require f }
+Dir["#{File.join(File.dirname(__FILE__), 'support')}/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
   config.expose_current_running_example_as :example

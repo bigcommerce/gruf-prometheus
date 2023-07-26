@@ -77,8 +77,14 @@ module Gruf
           client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency
         )
-        custom_collectors.each do |collector, arguments|
-          collector.start(arguments)
+        Array.wrap(custom_collectors).each do |collector|
+          if collector.is_a?(Hash)
+            collector.each do |collector_klass, arguments|
+              collector_klass.start(arguments)
+            end
+          else
+            collector.start
+          end
         end
       end
 

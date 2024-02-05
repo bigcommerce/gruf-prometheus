@@ -2,6 +2,8 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Add CI suite for Ruby 3.3
+
 ### 2.4.0
 
 - Add support for Ruby 3.2

@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/bigcommerce/gruf-prometheus/tree/main.svg?style=svg)](https://circleci.com/gh/bigcommerce/gruf-prometheus/tree/main)  [![Gem Version](https://badge.fury.io/rb/gruf-prometheus.svg)](https://badge.fury.io/rb/gruf-prometheus) [![Documentation](https://inch-ci.org/github/bigcommerce/gruf-prometheus.svg?branch=main)](https://inch-ci.org/github/bigcommerce/gruf-prometheus?branch=main)
 
-Adds Prometheus support for [gruf](https://github.com/bigcommerce/gruf) 2.7.0+. Supports Ruby 2.7-3.1.
+Adds Prometheus support for [gruf](https://github.com/bigcommerce/gruf) 2.7.0+. Supports Ruby 3.x.
 
 ## Installation
 

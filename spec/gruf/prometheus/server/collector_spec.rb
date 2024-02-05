@@ -121,7 +121,7 @@ describe Gruf::Prometheus::Server::Collector do
 
     it 'pushes the grpc_server_handled_latency_seconds to the server' do
       expect(collector).to receive(:push).with(
-        grpc_server_handled_latency_seconds: 2.0,
+        grpc_server_handled_latency_seconds: 0.002,
         custom_labels: {
           grpc_method: 'GetThing',
           grpc_service: 'gruf.demo.ThingService',
@@ -138,7 +138,7 @@ describe Gruf::Prometheus::Server::Collector do
 
       it 'pushes the grpc_server_handled_latency_seconds to the server with an unsuccessful code' do
         expect(collector).to receive(:push).with(
-          grpc_server_handled_latency_seconds: 2.0,
+          grpc_server_handled_latency_seconds: 0.002,
           custom_labels: {
             grpc_method: 'GetThing',
             grpc_service: 'gruf.demo.ThingService',

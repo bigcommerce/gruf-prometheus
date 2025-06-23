@@ -17,4 +17,17 @@
 #
 source 'https://rubygems.org'
 
+gem 'bundler-audit', '>= 0.6'
+gem 'pry', '>= 0.13'
+gem 'rake', '>= 13.0'
+gem 'rspec', '>= 3.10'
+gem 'rspec_junit_formatter', '>= 0.4'
+gem 'rubocop', '>= 1.1'
+gem 'rubocop-packaging'
+gem 'rubocop-performance'
+gem 'rubocop-rake'
+gem 'rubocop-rspec'
+gem 'rubocop-thread_safety'
+gem 'simplecov', '>= 0.19'
+
 gemspec

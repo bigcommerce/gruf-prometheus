@@ -70,9 +70,7 @@ module Gruf
           )
         end
         ::Gruf::Prometheus::Collector.start(
-          options: {
-            server: server
-          },
+          options: { server: },
           type: 'grpc',
           client: ::Bigcommerce::Prometheus.client,
           frequency: ::Gruf::Prometheus.collection_frequency

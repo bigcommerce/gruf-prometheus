@@ -23,7 +23,7 @@ describe Gruf::Prometheus::TypeCollector do
   describe '.type' do
     subject { type_collector.type }
 
-    it 'should return grpc' do
+    it 'returns grpc' do
       expect(subject).to eq 'grpc'
     end
   end
@@ -31,7 +31,7 @@ describe Gruf::Prometheus::TypeCollector do
   describe '.build_metrics' do
     subject { type_collector.send(:build_metrics) }
 
-    it 'should return all metrics as an array' do
+    it 'returns all metrics as an array' do
       expect(subject).to be_a(Hash)
       expect(subject[:pool_jobs_waiting_total].name).to eq 'grpc_pool_jobs_waiting_total'
       expect(subject[:pool_ready_workers_total].name).to eq 'grpc_pool_ready_workers_total'
@@ -58,7 +58,7 @@ describe Gruf::Prometheus::TypeCollector do
 
     subject { type_collector.send(:collect_metrics, data: obj) }
 
-    it 'should aggregate the values into the metrics' do
+    it 'aggregates the values into the metrics' do
       subject
 
       metrics = type_collector.metrics

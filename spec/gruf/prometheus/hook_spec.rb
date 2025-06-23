@@ -20,14 +20,18 @@ require 'spec_helper'
 
 describe Gruf::Prometheus::Hook do
   let(:options) { {} }
-  let(:hook) { described_class.new(options: options) }
+  let(:hook) { described_class.new(options:) }
   let(:port) { 9_394 }
   let(:timeout) { 1 }
-  let(:server) { Gruf::Server.new(port: port, timeout: timeout) }
-  let(:prom_server) { hook.send(:prometheus_server) }
+  let(:server) { Gruf::Server.new(port:, timeout:) }
+  let(:prom_server) { instance_double(::Bigcommerce::Prometheus::Server, start: nil, add_type_collector: nil) }
+
+  before do
+    allow(hook).to receive(:prometheus_server).and_return(prom_server)
+  end
 
   describe '.before_server_start' do
-    subject { hook.before_server_start(server: server) }
+    subject { hook.before_server_start(server:) }
 
     it 'starts the collectors and the server' do
       expect(logger).to_not receive(:error)
@@ -62,12 +66,11 @@ describe Gruf::Prometheus::Hook do
         expect(::Gruf::Prometheus::Collector).to receive(:start)
         expect(prom_server).to receive(:start).once
         subject
-
       end
     end
 
     context 'if custom collectors are passed' do
-      let(:options) { { collectors: collectors } }
+      let(:options) { { collectors: } }
       let(:collectors) do
         {
           CustomCollector => { type: 'custom' }
@@ -83,7 +86,7 @@ describe Gruf::Prometheus::Hook do
     end
 
     context 'if custom type collectors are passed' do
-      let(:options) { { type_collectors: type_collectors } }
+      let(:options) { { type_collectors: } }
       let(:custom_collector) { CustomTypeCollector.new }
       let(:type_collectors) { [custom_collector] }
 
@@ -101,7 +104,7 @@ describe Gruf::Prometheus::Hook do
   end
 
   describe '.after_server_stop' do
-    subject { hook.after_server_stop(server: server) }
+    subject { hook.after_server_stop(server:) }
 
     it 'should stop the server' do
       expect(prom_server).to receive(:stop).once

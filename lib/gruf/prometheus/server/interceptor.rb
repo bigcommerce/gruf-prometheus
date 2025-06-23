@@ -25,8 +25,8 @@ module Gruf
         ##
         # Intercept the call and send metrics
         #
-        def call(&block)
-          result = ::Gruf::Interceptors::Timer.time(&block)
+        def call(&)
+          result = ::Gruf::Interceptors::Timer.time(&)
 
           send_metrics(result)
 
@@ -41,10 +41,10 @@ module Gruf
         # @param [Gruf::Interceptors::Timer::Result] result
         #
         def send_metrics(result)
-          prometheus_collector.started_total(request: request)
-          prometheus_collector.failed_total(request: request, result: result) unless result.successful?
-          prometheus_collector.handled_total(request: request, result: result)
-          prometheus_collector.handled_latency_seconds(request: request, result: result) if measure_latency?
+          prometheus_collector.started_total(request:)
+          prometheus_collector.failed_total(request:, result:) unless result.successful?
+          prometheus_collector.handled_total(request:, result:)
+          prometheus_collector.handled_latency_seconds(request:, result:) if measure_latency?
         rescue StandardError => e
           # we don't want this to affect actual RPC execution, so just log an error and move on
           Gruf.logger.error "Failed registering metric to prometheus type collector: #{e.message} - #{e.class.name}"

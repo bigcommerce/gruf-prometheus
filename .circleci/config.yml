@@ -13,18 +13,6 @@ ruby_env: &ruby_env
     - image: cimg/ruby:<<parameters.ruby-version>>
 
 executors:
-  ruby_3_0:
-    <<: *ruby_env
-    parameters:
-      ruby-version:
-        type: string
-        default: "3.0"
-  ruby_3_1:
-    <<: *ruby_env
-    parameters:
-      ruby-version:
-        type: string
-        default: "3.1"
   ruby_3_2:
     <<: *ruby_env
     parameters:
@@ -37,6 +25,12 @@ executors:
       ruby-version:
         type: string
         default: "3.3"
+  ruby_3_4:
+    <<: *ruby_env
+    parameters:
+      ruby-version:
+        type: string
+        default: "3.4"
 
 commands:
   pre-setup:
@@ -100,7 +94,7 @@ commands:
       - run: bundle exec bundle-audit check -v <<parameters.additional_args>>
   rubocop:
     steps:
-      - run: bundle exec rubocop -p
+      - run: bundle exec rubocop -P
 
 jobs:
   bundle-audit:
@@ -108,7 +102,7 @@ jobs:
     parameters:
       e:
         type: executor
-        default: "ruby_3_0"
+        default: "ruby_3_2"
     steps:
       - pre-setup
       - bundle-install
@@ -118,7 +112,7 @@ jobs:
     parameters:
       e:
         type: executor
-        default: "ruby_3_0"
+        default: "ruby_3_2"
     steps:
       - pre-setup
       - bundle-install
@@ -128,7 +122,7 @@ jobs:
     parameters:
       e:
         type: executor
-        default: "ruby_3_0"
+        default: "ruby_3_2"
     steps:
       - pre-setup
       - bundle-install
@@ -136,28 +130,6 @@ jobs:
 
 workflows:
   version: 2
-  ruby_3_0:
-    jobs:
-      - bundle-audit:
-          name: "ruby-3_0-bundle_audit"
-          e: "ruby_3_0"
-      - rubocop:
-          name: "ruby-3_0-rubocop"
-          e: "ruby_3_0"
-      - rspec-unit:
-          name: "ruby-3_0-rspec"
-          e: "ruby_3_0"
-  ruby_3_1:
-    jobs:
-      - bundle-audit:
-          name: "ruby-3_1-bundle_audit"
-          e: "ruby_3_1"
-      - rubocop:
-          name: "ruby-3_1-rubocop"
-          e: "ruby_3_1"
-      - rspec-unit:
-          name: "ruby-3_1-rspec"
-          e: "ruby_3_1"
   ruby_3_2:
     jobs:
       - bundle-audit:
@@ -180,3 +152,14 @@ workflows:
       - rspec-unit:
           name: "ruby-3_3-rspec"
           e: "ruby_3_3"
+  ruby_3_4:
+    jobs:
+      - bundle-audit:
+          name: "ruby-3_4-bundle_audit"
+          e: "ruby_3_4"
+      - rubocop:
+          name: "ruby-3_4-rubocop"
+          e: "ruby_3_4"
+      - rspec-unit:
+          name: "ruby-3_4-rspec"
+          e: "ruby_3_4"

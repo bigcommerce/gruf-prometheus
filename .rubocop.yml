@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.2
   NewCops: enable
   Exclude:
     - spec/gruf/**/*
@@ -8,10 +8,12 @@ AllCops:
     - vendor/**/*
     - tmp/**/*
     - log/**/*
-require:
-  - rubocop-performance
-  - rubocop-thread_safety
+plugins:
   - rubocop-packaging
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+  - rubocop-thread_safety
 
 # Allow *VALID_CONFIG_KEYS.keys
 Lint/AmbiguousOperator:
@@ -33,4 +35,7 @@ Naming/AccessorMethodName:
     - spec/demo/**/*
 
 Style/RedundantConstantBase:
+  Enabled: false
+
+Naming/PredicateMethod:
   Enabled: false

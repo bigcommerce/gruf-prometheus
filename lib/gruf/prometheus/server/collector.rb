@@ -39,7 +39,7 @@ module Gruf
         def started_total(request:)
           push(
             grpc_server_started_total: 1,
-            custom_labels: custom_labels(request: request)
+            custom_labels: custom_labels(request:)
           )
         end
 
@@ -52,7 +52,7 @@ module Gruf
 
           push(
             grpc_server_failed_total: 1,
-            custom_labels: custom_labels(request: request)
+            custom_labels: custom_labels(request:)
           )
         end
 
@@ -63,7 +63,7 @@ module Gruf
         def handled_total(request:, result:)
           push(
             grpc_server_handled_total: 1,
-            custom_labels: custom_labels(request: request, result: result)
+            custom_labels: custom_labels(request:, result:)
           )
         end
 
@@ -74,7 +74,7 @@ module Gruf
         def handled_latency_seconds(request:, result:)
           push(
             grpc_server_handled_latency_seconds: result.elapsed.to_f,
-            custom_labels: custom_labels(request: request, result: result)
+            custom_labels: custom_labels(request:, result:)
           )
         end
 

@@ -47,6 +47,7 @@ module Gruf
 
       ##
       # @return [GRPC::RpcServer]
+      # @return [NilClass]
       #
       def grpc_server
         @options.fetch(:server, nil)&.server

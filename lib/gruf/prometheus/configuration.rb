@@ -71,7 +71,7 @@ module Gruf
       #
       def reset
         VALID_CONFIG_KEYS.each do |k, v|
-          send("#{k}=".to_sym, v)
+          send(:"#{k}=", v)
         end
         self.process_label = ENV.fetch('PROMETHEUS_PROCESS_LABEL', 'grpc').to_s
         self.process_name = ENV.fetch('PROMETHEUS_PROCESS_NAME', 'grpc').to_s
@@ -86,8 +86,8 @@ module Gruf
       # @return [String] The current Ruby environment
       #
       def environment
-        if defined?(Rails)
-          Rails.env.to_s
+        if defined?(::Rails)
+          ::Rails.env.to_s
         else
           (ENV['RACK_ENV'] || ENV['RAILS_ENV'] || 'development').to_s
         end

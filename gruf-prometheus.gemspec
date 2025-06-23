@@ -31,22 +31,10 @@ Gem::Specification.new do |spec|
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files         = Dir['README.md', 'CHANGELOG.md', 'CODE_OF_CONDUCT.md', 'lib/**/*', 'gruf-prometheus.gemspec']
-  spec.require_paths = ['lib']
-  spec.required_ruby_version = '>= 3.0', '< 4'
+  spec.require_paths = %w[lib]
+  spec.required_ruby_version = '>= 3.2', '< 4'
 
   # Runtime dependencies
-  spec.add_runtime_dependency 'bc-prometheus-ruby', '>= 0.5.1'
-  spec.add_runtime_dependency 'gruf', '>= 2.7'
-
-  # Development dependencies
-  spec.add_development_dependency 'bundler-audit', '>= 0.6'
-  spec.add_development_dependency 'pry', '>= 0.13'
-  spec.add_development_dependency 'rake', '>= 13.0'
-  spec.add_development_dependency 'rspec', '>= 3.10'
-  spec.add_development_dependency 'rspec_junit_formatter', '>= 0.4'
-  spec.add_development_dependency 'rubocop', '>= 1.1'
-  spec.add_development_dependency 'rubocop-packaging', '~> 0.5'
-  spec.add_development_dependency 'rubocop-performance', '~> 1.8'
-  spec.add_development_dependency 'rubocop-thread_safety', '~> 0.3'
-  spec.add_development_dependency 'simplecov', '>= 0.19'
+  spec.add_dependency 'bc-prometheus-ruby', '>= 0.5.1'
+  spec.add_dependency 'gruf', '>= 2.7'
 end

@@ -15,39 +15,24 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require 'prometheus_exporter'
-require 'prometheus_exporter/server'
-require 'prometheus_exporter/client'
-require 'prometheus_exporter/middleware'
-require 'prometheus_exporter/instrumentation'
-require 'gruf'
-require 'net/http'
-require 'logger'
-require 'bigcommerce/prometheus'
-
-require_relative 'prometheus/version'
-require_relative 'prometheus/configuration'
-require_relative 'prometheus/request_types'
-require_relative 'prometheus/server/collector'
-require_relative 'prometheus/server/interceptor'
-require_relative 'prometheus/server/type_collector'
-require_relative 'prometheus/client/collector'
-require_relative 'prometheus/client/interceptor'
-require_relative 'prometheus/client/type_collector'
-require_relative 'prometheus/client'
-require_relative 'prometheus/collector'
-require_relative 'prometheus/type_collector'
-require_relative 'prometheus/hook'
+require_relative 'client/type_collector'
 
 module Gruf
-  ##
-  # Base top-level gruf prometheus module
-  #
   module Prometheus
-    extend Configuration
-
-    def self.client
-      Bigcommerce::Prometheus::Client.instance
+    ##
+    # Namespace for gRPC client-side prometheus instrumentation
+    #
+    module Client
+      ##
+      # Builds a type collector for registering grpc_client metrics in processes that never
+      # boot a Gruf server (and thus never run Gruf::Prometheus::Hook), e.g. Web, Resque,
+      # or Hutch processes that only make outbound gRPC calls
+      #
+      # @return [Gruf::Prometheus::Client::TypeCollector]
+      #
+      def self.type_collector
+        ::Gruf::Prometheus::Client::TypeCollector.new
+      end
     end
   end
 end

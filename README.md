@@ -101,17 +101,31 @@ The precedence order for this is, from first to last, with last taking precedenc
 
 One caveat is that you _must_ have the appropriate Type Collector setup in whatever process you are running in. If
 you are already doing this in a gruf gRPC service that is using the hook provided by this gem above, no further
-configuration is needed. Otherwise, in whatever bc-prometheus-ruby configuration you have setup, you'll need to ensure
-the type collector is loaded:
+configuration is needed. Otherwise - e.g. in a Web, Resque, or Hutch process that only makes outbound gRPC calls
+and never boots a Gruf server - you'll need to register the type collector yourself, via whatever bc-prometheus-ruby
+configuration you have setup for that process type:
 
 ```ruby
-# prometheus_server is whatever `::Bigcommerce::Prometheus::Server` instance you are using in the current process
-# Often hooks into these are exposed as configuration options, e.g. `web_collectors`, `resque_collectors`, etc
-prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)
+Bigcommerce::Prometheus.configure do |c|
+  c.web_type_collectors = [::Gruf::Prometheus::Client.type_collector]
+  # or resque_type_collectors / hutch_type_collectors, matching whichever process type this is
+end
+```
+
+For process types that bc-prometheus-ruby has no `*_type_collectors` configuration option for, or if you otherwise
+have direct access to the `::Bigcommerce::Prometheus::Server` instance for the current process, register it against
+that server directly, the same way this gem's hook does internally:
+
+```ruby
+prometheus_server.add_type_collector(::Gruf::Prometheus::Client.type_collector)
 ```
 
 Note that you don't need to do this for the `Gruf::Prometheus::Client::Collector`, as it is an on-demand collector
 that does not run in a threaded loop.
+
+If you plan to enable `client_measure_latency` via `Gruf::Prometheus.configure`, do so *before* calling
+`Gruf::Prometheus::Client.type_collector` - the latency histogram metric is built at construction time, so building
+the type collector before that setting is applied will leave `grpc_client_completed_latency_seconds` out permanently.
 
 See [bc-prometheus-ruby](https://github.com/bigcommerce/bc-prometheus-ruby#custom-server-integrations)'s documentation
 on custom server integrations for more information.

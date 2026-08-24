@@ -107,7 +107,8 @@ configuration you have setup for that process type:
 
 ```ruby
 Bigcommerce::Prometheus.configure do |c|
-  c.web_type_collectors = [::Gruf::Prometheus::Client.type_collector]
+  # Append rather than assign, so any type collectors the process already registers are preserved
+  c.web_type_collectors = Array(c.web_type_collectors) + [::Gruf::Prometheus::Client.type_collector]
   # or resque_type_collectors / hutch_type_collectors, matching whichever process type this is
 end
 ```

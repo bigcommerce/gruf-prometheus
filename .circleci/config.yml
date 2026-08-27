@@ -122,7 +122,7 @@ jobs:
     steps:
       - pre-setup
       - bundle-install
-      - bundle-audit
+      - rubocop
   rspec-unit:
     executor: <<parameters.e>>
     parameters:

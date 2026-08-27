@@ -52,7 +52,7 @@ logger.level = ENV.fetch('VERBOSE', '0') == '1' ? ::Logger::Severity::DEBUG : ::
 # Port and logger are configured up front so that the only variable under test is when the *_type_collectors
 # assignment lands relative to instrumentor construction.
 ::Bigcommerce::Prometheus.configure do |c|
-  c.server_host = '0.0.0.0'
+  c.server_host = '127.0.0.1'
   c.server_port = PORT
   c.logger = logger
 end
@@ -102,7 +102,7 @@ collector.send(
 )
 sleep 2 # wait for the push client to flush
 
-body = ::Net::HTTP.get(URI("http://0.0.0.0:#{PORT}/metrics"))
+body = ::Net::HTTP.get(URI("http://127.0.0.1:#{PORT}/metrics"))
 exported = body.lines.grep(/^\w*grpc_client_started_total\{/).map(&:chomp)
 result = exported.empty? ? 'NO grpc_client_* metrics exported' : exported.first
 

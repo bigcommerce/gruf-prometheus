@@ -101,8 +101,7 @@ The precedence order for this is, from first to last, with last taking precedenc
 
 One caveat is that you _must_ have the appropriate Type Collector setup in whatever process you are running in. If
 you are already doing this in a gruf gRPC service that is using the hook provided by this gem above, no further
-configuration is needed. Otherwise - e.g. in a Web, Resque, or Hutch process that only makes outbound gRPC calls
-and never boots a Gruf server - you'll need to register the type collector yourself, via whatever bc-prometheus-ruby
+configuration is needed. Otherwise, in a processes that only makes outbound gRPC calls (web, resque, hutch, etc), you'll need to register the type collector yourself, via whatever bc-prometheus-ruby
 configuration you have setup for that process type:
 
 ```ruby

@@ -25,8 +25,7 @@ module Gruf
     module Client
       ##
       # Builds a type collector for registering grpc_client metrics in processes that never
-      # boot a Gruf server (and thus never run Gruf::Prometheus::Hook), e.g. Web, Resque,
-      # or Hutch processes that only make outbound gRPC calls
+      # boot a Gruf server for processes that only make outbound gRPC calls
       #
       # @return [Gruf::Prometheus::Client::TypeCollector]
       #

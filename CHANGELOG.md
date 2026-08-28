@@ -2,6 +2,9 @@ Changelog for the gruf-prometheus gem.
 
 ### Pending Release
 
+- Add `Gruf::Prometheus::Client.type_collector` factory for registering grpc_client metrics in
+  client-only processes (Web, Resque, Hutch) that never boot a Gruf server
+
 ### 2.6.0
 
 - Add support for Ruby 4.0

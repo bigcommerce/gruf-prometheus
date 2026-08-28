@@ -1,0 +1,110 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright (c) 2019-present, BigCommerce Pty. Ltd. All rights reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# Demonstrates registering the grpc_client type collector in a client-only process - one that makes outbound gRPC
+# calls but never boots a gruf server, and so never runs Gruf::Prometheus::Hook.
+#
+# It drives the real bc-prometheus-ruby instrumentor for the given process type, configured the way the README
+# instructs, pushes grpc_client_* metrics the same way Gruf::Prometheus::Client::Interceptor does, and then scrapes
+# /metrics to show whether they were exported.
+#
+#   INSTRUMENTOR  web | resque | hutch    which bc-prometheus-ruby instrumentor to drive (default: web)
+#   REGISTER      1 | 0                   register the grpc_client type collector (default: 1)
+#   ORDER         before | after          assign *_type_collectors before or after the instrumentor is constructed
+#                                         (default: before)
+#   PORT          integer                 port for the prometheus exporter (default: 8642)
+#
+# Usage:
+#
+#   bundle exec ruby spec/demo/client_only
+#   REGISTER=0 bundle exec ruby spec/demo/client_only
+#   INSTRUMENTOR=hutch ORDER=after PORT=8643 bundle exec ruby spec/demo/client_only
+#
+$LOAD_PATH.unshift File.expand_path('../../lib', __dir__)
+require 'gruf/prometheus'
+require 'logger'
+require 'net/http'
+
+KIND = ENV.fetch('INSTRUMENTOR', 'web')
+REGISTER = ENV.fetch('REGISTER', '1') == '1'
+ORDER = ENV.fetch('ORDER', 'before')
+PORT = ENV.fetch('PORT', '8642').to_i
+
+ENV['PROCESS'] = "#{KIND}-client-only-demo"
+logger = ::Logger.new($stdout)
+logger.level = ENV.fetch('VERBOSE', '0') == '1' ? ::Logger::Severity::DEBUG : ::Logger::Severity::FATAL
+
+# Port and logger are configured up front so that the only variable under test is when the *_type_collectors
+# assignment lands relative to instrumentor construction.
+::Bigcommerce::Prometheus.configure do |c|
+  c.server_host = '127.0.0.1'
+  c.server_port = PORT
+  c.logger = logger
+end
+
+register_type_collector = lambda do
+  next unless REGISTER
+
+  ::Bigcommerce::Prometheus.configure do |c|
+    type_collectors = [::Gruf::Prometheus::Client.type_collector]
+    case KIND
+    when 'web' then c.web_type_collectors = type_collectors
+    when 'resque' then c.resque_type_collectors = type_collectors
+    when 'hutch' then c.hutch_type_collectors = type_collectors
+    else raise ArgumentError, "unknown INSTRUMENTOR #{KIND}, expected web, resque, or hutch"
+    end
+  end
+end
+
+# Stands in for the Rails/Puma application object the instrumentors expect
+app_config = Struct.new(:before_fork_callbacks, :after_fork_callbacks).new(nil, nil)
+app_middleware = Object.new
+def app_middleware.unshift(*) = nil
+app = Struct.new(:config, :middleware).new(app_config, app_middleware)
+
+register_type_collector.call if ORDER == 'before'
+instrumentor = ::Bigcommerce::Prometheus::Instrumentors.const_get(KIND.capitalize).new(app: app)
+register_type_collector.call if ORDER == 'after'
+
+begin
+  instrumentor.start
+  # The web instrumentor registers inside a before_fork callback, which puma would invoke for us
+  (app_config.before_fork_callbacks || []).each(&:call)
+rescue Exception => e # rubocop:disable Lint/RescueException
+  # The hutch instrumentor raises LoadError from its middleware setup when the hutch gem is absent, which is well
+  # after the type collectors have been registered and the exporter started
+  logger.warn "instrumentor raised after registering type collectors: #{e.class}"
+end
+sleep 1
+
+# The same push path Gruf::Prometheus::Client::Interceptor drives on an outbound call
+collector = ::Gruf::Prometheus::Client::Collector.new(type: 'grpc_client', client: ::Bigcommerce::Prometheus.client)
+collector.send(
+  :push,
+  grpc_client_started_total: 1,
+  grpc_client_completed: 1,
+  custom_labels: { grpc_service: 'rpc.ThingService', grpc_method: 'GetThing' }
+)
+sleep 2 # wait for the push client to flush
+
+body = ::Net::HTTP.get(URI("http://127.0.0.1:#{PORT}/metrics"))
+exported = body.lines.grep(/^\w*grpc_client_started_total\{/).map(&:chomp)
+result = exported.empty? ? 'NO grpc_client_* metrics exported' : exported.first
+
+puts format('%<kind>-7s REGISTER=%<register>s ORDER=%<order>-6s -> %<result>s', # rubocop:disable RSpec/Output -- this is a demo script, not a spec
+            kind: KIND, register: REGISTER ? 1 : 0, order: ORDER, result: result)

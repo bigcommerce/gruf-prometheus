@@ -101,17 +101,39 @@ The precedence order for this is, from first to last, with last taking precedenc
 
 One caveat is that you _must_ have the appropriate Type Collector setup in whatever process you are running in. If
 you are already doing this in a gruf gRPC service that is using the hook provided by this gem above, no further
-configuration is needed. Otherwise, in whatever bc-prometheus-ruby configuration you have setup, you'll need to ensure
-the type collector is loaded:
+configuration is needed. Otherwise, in a processes that only makes outbound gRPC calls (web, resque, hutch, etc), you'll need to register the type collector yourself, via whatever bc-prometheus-ruby
+configuration you have setup for that process type:
 
 ```ruby
-# prometheus_server is whatever `::Bigcommerce::Prometheus::Server` instance you are using in the current process
-# Often hooks into these are exposed as configuration options, e.g. `web_collectors`, `resque_collectors`, etc
-prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)
+Bigcommerce::Prometheus.configure do |c|
+  # Build on any type collectors the process already registers rather than overwriting them
+  c.web_type_collectors = Array(c.web_type_collectors) + [::Gruf::Prometheus::Client.type_collector]
+  # or resque_type_collectors / hutch_type_collectors, matching whichever process type this is
+end
+```
+
+This configuration must be applied *before* bc-prometheus-ruby constructs the instrumentor for the process. Each
+instrumentor reads its `*_type_collectors` array in its constructor and registers the contents later, when it starts,
+so an assignment that lands after construction is silently ignored and no `grpc_client_*` metrics are exported. Rails
+is not exempt from this: bc-prometheus-ruby's railtie constructs the Web instrumentor from its own initializer, and
+third-party railtie initializers run *before* the application's `load_config_initializers` step. Assigning
+`web_type_collectors` from a file in `config/initializers/` is therefore too late - do it in `config/application.rb`,
+in a `config.before_initialize` block, or use the `add_type_collector` form below.
+
+For process types that bc-prometheus-ruby has no `*_type_collectors` configuration option for, or if you otherwise
+have direct access to the `::Bigcommerce::Prometheus::Server` instance for the current process, register it against
+that server directly, the same way this gem's hook does internally:
+
+```ruby
+prometheus_server.add_type_collector(::Gruf::Prometheus::Client.type_collector)
 ```
 
 Note that you don't need to do this for the `Gruf::Prometheus::Client::Collector`, as it is an on-demand collector
 that does not run in a threaded loop.
+
+If you plan to enable `client_measure_latency` via `Gruf::Prometheus.configure`, do so *before* calling
+`Gruf::Prometheus::Client.type_collector` - the latency histogram metric is built at construction time, so building
+the type collector before that setting is applied will leave `grpc_client_completed_latency_seconds` out permanently.
 
 See [bc-prometheus-ruby](https://github.com/bigcommerce/bc-prometheus-ruby#custom-server-integrations)'s documentation
 on custom server integrations for more information.

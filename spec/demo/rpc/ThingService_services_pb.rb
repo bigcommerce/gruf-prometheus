@@ -19,14 +19,14 @@
 #
 
 require 'grpc'
-require_relative 'ThingService_pb'
+require 'rpc/ThingService_pb'
 
 module Rpc
   module ThingService
     # Demonstration service
     class Service
 
-      include GRPC::GenericService
+      include ::GRPC::GenericService
 
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
@@ -34,7 +34,7 @@ module Rpc
 
       # Request calls
       # For testing a request/response call
-      rpc :GetThing, GetThingRequest, GetThingResponse
+      rpc :GetThing, ::Rpc::GetThingRequest, ::Rpc::GetThingResponse
     end
 
     Stub = Service.rpc_stub_class

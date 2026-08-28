@@ -30,7 +30,7 @@ module Gruf
         logger.info "[gruf-prometheus][#{::Gruf::Prometheus.process_name}] Starting #{server.class}"
         prometheus_server.add_type_collector(::Gruf::Prometheus::TypeCollector.new)
         prometheus_server.add_type_collector(::Gruf::Prometheus::Server::TypeCollector.new)
-        prometheus_server.add_type_collector(::Gruf::Prometheus::Client::TypeCollector.new)
+        prometheus_server.add_type_collector(::Gruf::Prometheus::Client.type_collector)
         prometheus_server.add_type_collector(::PrometheusExporter::Server::ActiveRecordCollector.new)
         custom_type_collectors.each do |tc|
           prometheus_server.add_type_collector(tc)

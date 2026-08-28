@@ -16,7 +16,9 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+ENV['RACK_ENV'] ||= 'test'
 $LOAD_PATH.unshift File.expand_path('../../lib', __dir__)
+$LOAD_PATH.unshift File.expand_path(__dir__)
 require 'gruf/prometheus'
 require_relative 'thing_controller'
 require_relative '../support/custom_type_collector'

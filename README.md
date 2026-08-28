@@ -114,8 +114,11 @@ end
 
 This configuration must be applied *before* bc-prometheus-ruby constructs the instrumentor for the process. Each
 instrumentor reads its `*_type_collectors` array in its constructor and registers the contents later, when it starts,
-so an assignment that lands after construction is silently ignored and no `grpc_client_*` metrics are exported. Under
-Rails this ordering is usually handled for you, since the railtie builds instrumentors after initializers have run.
+so an assignment that lands after construction is silently ignored and no `grpc_client_*` metrics are exported. Rails
+is not exempt from this: bc-prometheus-ruby's railtie constructs the Web instrumentor from its own initializer, and
+third-party railtie initializers run *before* the application's `load_config_initializers` step. Assigning
+`web_type_collectors` from a file in `config/initializers/` is therefore too late - do it in `config/application.rb`,
+in a `config.before_initialize` block, or use the `add_type_collector` form below.
 
 For process types that bc-prometheus-ruby has no `*_type_collectors` configuration option for, or if you otherwise
 have direct access to the `::Bigcommerce::Prometheus::Server` instance for the current process, register it against

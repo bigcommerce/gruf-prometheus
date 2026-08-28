@@ -106,7 +106,5 @@ body = ::Net::HTTP.get(URI("http://127.0.0.1:#{PORT}/metrics"))
 exported = body.lines.grep(/^\w*grpc_client_started_total\{/).map(&:chomp)
 result = exported.empty? ? 'NO grpc_client_* metrics exported' : exported.first
 
-# rubocop:disable RSpec/Output -- this is a demo script, not a spec
-puts format('%<kind>-7s REGISTER=%<register>s ORDER=%<order>-6s -> %<result>s',
+puts format('%<kind>-7s REGISTER=%<register>s ORDER=%<order>-6s -> %<result>s', # rubocop:disable RSpec/Output -- this is a demo script, not a spec
             kind: KIND, register: REGISTER ? 1 : 0, order: ORDER, result: result)
-# rubocop:enable RSpec/Output
